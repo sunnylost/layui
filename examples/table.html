@@ -21,6 +21,7 @@ body{padding: 20px; /*overflow-y: scroll;*/}
   <button class="layui-btn" data-type="getCheckData">获取选中行数据</button>
   <button class="layui-btn" data-type="getCheckLength">获取选中数目</button>
   <button class="layui-btn" data-type="isAll">验证是否全选</button>
+  <button class="layui-btn" data-type="deleteChecked">删除</button>
 </div>
 
 <table id="test" lay-filter="test"></table>
@@ -176,7 +177,7 @@ layui.use('table', function(){
   var table = layui.table;
   
   //渲染
-  table.render({
+    table.render({
     elem: '#test'
     ,height: 350
     ,url: 'json/table/demo1.json'
@@ -200,8 +201,8 @@ layui.use('table', function(){
       ,{fixed: 'right', title:'操作', toolbar: '#barDemo', width:150}
     ]]
   });
-  
-  table.render({
+
+let t = table.render({
     elem: '#test2'
     ,url: 'json/table/demo1.json'
     ,page: { //详细参数可参考 laypage 组件文档
@@ -394,6 +395,13 @@ layui.use('table', function(){
   
   
   var $ = layui.jquery, active = {
+      deleteChecked() {
+          let _table = t.table
+          _table.getChecked().data.forEach((v) =>{
+              console.log(v)
+              _table.deleteRow(v.LAY_TABLE_INDEX)
+          })
+      },
     getCheckData: function(){
       var checkStatus = table.checkStatus('test')
       ,data = checkStatus.data;
