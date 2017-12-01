@@ -7,7 +7,8 @@ module.exports = {
 	},
 	globals: {
 		layui: true,
-		layer: true
+		layer: true,
+		jQuery: true
 	},
 	extends: 'eslint:recommended',
 	rules: {
