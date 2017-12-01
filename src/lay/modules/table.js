@@ -1,5 +1,4 @@
 /**
-
  @Name：layui.table 表格操作
  @Author：贤心
  @License：MIT
@@ -9,7 +8,7 @@
 layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     'use strict'
 
-    var $ = layui.$,
+    let $ = layui.$,
         laytpl = layui.laytpl,
         laypage = layui.laypage,
         layer = layui.layer,
@@ -27,7 +26,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
             //设置全局项
             set: function(options) {
-                var that = this
+                let that = this
                 that.config = $.extend({}, that.config, options)
                 return that
             },
@@ -39,7 +38,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         },
         //操作当前实例
         thisTable = function() {
-            var that = this,
+            let that = this,
                 options = that.config,
                 id = options.id
 
@@ -56,10 +55,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         //字符常量
         MOD_NAME = 'table',
         ELEM = '.layui-table',
-        THIS = 'layui-this',
-        SHOW = 'layui-show',
         HIDE = 'layui-hide',
-        DISABLED = 'layui-disabled',
         NONE = 'layui-none',
         ELEM_VIEW = 'layui-table-view',
         ELEM_HEADER = '.layui-table-header',
@@ -75,7 +71,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         ELEM_HOVER = 'layui-table-hover',
         //thead区域模板
         TPL_HEADER = function(options) {
-            var rowCols =
+            let rowCols =
                 '{{#if(item2.colspan){}} colspan="{{item2.colspan}}"{{#} if(item2.rowspan){}} rowspan="{{item2.rowspan}}"{{#}}}'
 
             options = options || {}
@@ -199,7 +195,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         _DOC = $(document),
         //构造器
         Class = function(options) {
-            var that = this
+            let that = this
             that.index = ++table.index
             that.config = $.extend({}, that.config, table.config, options)
             that.render()
@@ -214,7 +210,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //表格渲染
     Class.prototype.render = function() {
-        var that = this,
+        let that = this,
             options = that.config
 
         options.elem = $(options.elem)
@@ -256,7 +252,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         that.setArea() //动态分配列宽高
 
         //开始插入替代元素
-        var othis = options.elem,
+        let othis = options.elem,
             hasRender = othis.next('.' + ELEM_VIEW),
             //主容器
             reElem = (that.elem = $(
@@ -289,7 +285,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         //如果多级表头，则填补表头高度
         if (options.cols.length > 1) {
-            var th = that.layFixed.find(ELEM_HEADER).find('th')
+            let th = that.layFixed.find(ELEM_HEADER).find('th')
             th.height(
                 that.layHeader.height() -
                     1 -
@@ -305,13 +301,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //根据列类型，定制化参数
     Class.prototype.initOpts = function(item) {
-        var that = this,
-            options = that.config,
-            initWidth = {
-                checkbox: 48,
-                space: 15,
-                numbers: 40
-            }
+        let initWidth = {
+            checkbox: 48,
+            space: 15,
+            numbers: 40
+        }
 
         //让 type 参数兼容旧版本
         if (item.checkbox) item.type = 'checkbox'
@@ -326,7 +320,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //动态分配列宽高
     Class.prototype.setArea = function() {
-        var that = this,
+        let that = this,
             options = that.config,
             colNums = 0, //列个数
             autoColNums = 0, //自动列宽的列个数
@@ -337,8 +331,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 (function() {
                     //获取容器宽度
                     //如果父元素宽度为0（一般为隐藏元素），则继续查找上层元素，直到找到真实宽度为止
-                    var getWidth = function(parent) {
-                        var width, isNone
+                    let getWidth = function(parent) {
+                        let width, isNone
                         parent = parent || options.elem.parent()
                         width = parent.width()
                         isNone = parent.css('display') === 'none'
@@ -363,7 +357,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         //遍历所有列
         layui.each(options.cols, function(i1, item1) {
             layui.each(item1, function(i2, item2) {
-                var width
+                let width
 
                 if (!item2) {
                     item1.splice(i2, 1)
@@ -396,7 +390,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         layui.each(options.cols, function(i1, item1) {
             layui.each(item1, function(i2, item2) {
-                var minWidth = item2.minWidth || options.cellMinWidth
+                let minWidth = item2.minWidth || options.cellMinWidth
                 if (item2.colspan > 1) return
                 if (item2.width === 0) {
                     item2.width = Math.floor(autoWidth >= minWidth ? autoWidth : minWidth) //不能低于设定的最小宽度
@@ -413,7 +407,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //表格重载
     Class.prototype.reload = function(options) {
-        var that = this
+        let that = this
         that.config = $.extend({}, that.config, options)
         that.render()
     }
@@ -423,7 +417,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //获得数据
     Class.prototype.pullData = function(curr, loadIndex) {
-        var that = this,
+        let that = this,
             options = that.config,
             request = options.request,
             response = options.response,
@@ -437,7 +431,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         if (options.url) {
             //Ajax请求
-            var params = {}
+            let params = {}
             params[request.pageName] = curr
             params[request.limitName] = options.limit
 
@@ -463,7 +457,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     typeof options.done === 'function' &&
                         options.done(res, curr, res[response.countName])
                 },
-                error: function(e, m) {
+                error: function() {
                     that.layMain.html('<div class="' + NONE + '">数据接口请求异常</div>')
                     that.renderForm()
                     loadIndex && layer.close(loadIndex)
@@ -471,7 +465,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             })
         } else if (options.data && options.data.constructor === Array) {
             //已知数据
-            var res = {},
+            let res = {},
                 startLimit = curr * options.limit - options.limit
 
             res[response.dataName] = options.data.concat().splice(startLimit, options.limit)
@@ -484,7 +478,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //遍历表头
     Class.prototype.eachCols = function(callback) {
-        var cols = $.extend(true, [], this.config.cols),
+        let cols = $.extend(true, [], this.config.cols),
             arrs = [],
             index = 0
 
@@ -493,7 +487,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             layui.each(item1, function(i2, item2) {
                 //如果是组合列，则捕获对应的子列
                 if (item2.colspan > 1) {
-                    var childIndex = 0
+                    let childIndex = 0
                     index++
                     item2.CHILD_COLS = []
                     layui.each(cols[i1 + 1], function(i22, item22) {
@@ -509,7 +503,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         })
 
         //重新遍历列，如果有子列，则进入递归
-        var eachArrs = function(obj) {
+        let eachArrs = function(obj) {
             layui.each(obj || arrs, function(i, item) {
                 if (item.CHILD_COLS) return eachArrs(item.CHILD_COLS)
                 callback(i, item)
@@ -521,7 +515,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //数据渲染
     Class.prototype.renderData = function(res, curr, count, sort) {
-        var that = this,
+        let that = this,
             options = that.config,
             data = res[options.response.dataName] || [],
             trs = [],
@@ -534,7 +528,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     return that.sort(that.sortKey.field, that.sortKey.sort, true)
                 }
                 layui.each(data, function(i1, item1) {
-                    var tds = [],
+                    let tds = [],
                         tds_fixed = [],
                         tds_fixed_r = [],
                         numbers = i1 + options.limit * (curr - 1) + 1 //序号
@@ -545,20 +539,19 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     }
 
                     that.eachCols(function(i3, item3) {
-                        var field = item3.field || i3,
-                            content = item1[field],
-                            cell = that.getColElem(that.layHeader, field)
+                        let field = item3.field || i3,
+                            content = item1[field]
 
                         if (content === undefined || content === null) content = ''
                         if (item3.colspan > 1) return
 
                         //td内容
-                        var td = [
+                        let td = [
                             '<td data-field="' +
                                 field +
                                 '" ' +
                                 (function() {
-                                    var attr = []
+                                    let attr = []
                                     if (item3.edit) attr.push('data-edit="' + item3.edit + '"') //是否允许单元格编辑
                                     if (item3.align) attr.push('align="' + item3.align + '"') //对齐方式
                                     if (item3.templet) attr.push('data-content="' + content + '"') //自定义模板
@@ -573,14 +566,14 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                             '<div class="layui-table-cell laytable-cell-' +
                                 (function() {
                                     //返回对应的CSS类标识
-                                    var str = options.index + '-' + field
+                                    let str = options.index + '-' + field
                                     return item3.type === 'normal'
                                         ? str
                                         : str + ' laytable-cell-' + item3.type
                                 })() +
                                 '">' +
                                 (function() {
-                                    var tplData = $.extend(
+                                    let tplData = $.extend(
                                         true,
                                         {
                                             LAY_INDEX: numbers
@@ -593,7 +586,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                         return (
                                             '<input type="checkbox" name="layTableCheckbox" lay-skin="primary" ' +
                                             (function() {
-                                                var checkName = table.config.checkName
+                                                let checkName = table.config.checkName
                                                 //如果是全选
                                                 if (item3[checkName]) {
                                                     item1[checkName] = item3[checkName]
@@ -613,11 +606,13 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                         return laytpl($(item3.toolbar).html() || '').render(tplData)
                                     }
 
-                                    return item3.templet
-                                        ? laytpl($(item3.templet).html() || String(content)).render(
-                                              tplData
-                                          )
-                                        : content
+                                    if (item3.templet) {
+                                        return laytpl(
+                                            $(item3.templet).html() || String(content)
+                                        ).render(tplData)
+                                    } else {
+                                        return content
+                                    }
                                 })(),
                             '</div></td>'
                         ].join('')
@@ -642,11 +637,13 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
                 that.renderForm()
                 that.syncCheckAll()
-                that.haveInit
-                    ? that.scrollPatch()
-                    : setTimeout(function() {
-                          that.scrollPatch()
-                      }, 50)
+                if (that.haveInit) {
+                    that.scrollPatch()
+                } else {
+                    setTimeout(function() {
+                        that.scrollPatch()
+                    }, 50)
+                }
                 that.haveInit = true
                 layer.close(that.tipsIndex)
             }
@@ -701,7 +698,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //找到对应的列元素
     Class.prototype.getColElem = function(parent, field) {
-        var that = this,
+        let that = this,
             options = that.config
         return parent.eq(0).find('.laytable-cell-' + (options.index + '-' + field) + ':eq(0)')
     }
@@ -713,7 +710,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //数据排序
     Class.prototype.sort = function(th, type, pull, formEvent) {
-        var that = this,
+        let that = this,
             field,
             res = {},
             options = that.config,
@@ -723,8 +720,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         //字段匹配
         if (typeof th === 'string') {
-            that.layHeader.find('th').each(function(i, item) {
-                var othis = $(this),
+            that.layHeader.find('th').each(function() {
+                let othis = $(this),
                     _field = othis.data('field')
                 if (_field === th) {
                     th = othis
@@ -735,7 +732,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         }
 
         try {
-            var field = field || th.data('field')
+            field = field || th.data('field')
 
             //如果欲执行的排序已在状态中，则不执行渲染
             if (that.sortKey && !pull) {
@@ -744,7 +741,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 }
             }
 
-            var elemSort = that.layHeader
+            let elemSort = that.layHeader
                 .find('th .laytable-cell-' + options.index + '-' + field)
                 .find(ELEM_SORT)
             that.layHeader
@@ -789,7 +786,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //请求loading
     Class.prototype.loading = function() {
-        var that = this,
+        let that = this,
             options = that.config
         if (options.loading && options.url) {
             return layer.msg('数据请求中', {
@@ -806,7 +803,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //同步选中值状态
     Class.prototype.setCheckData = function(index, checked) {
-        var that = this,
+        let that = this,
             options = that.config,
             thisData = table.cache[that.key]
         if (!thisData[index]) return
@@ -816,7 +813,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //同步全选按钮状态
     Class.prototype.syncCheckAll = function() {
-        var that = this,
+        let that = this,
             options = that.config,
             checkAllElem = that.layHeader.find('input[name="layTableCheckbox"]'),
             syncColsCheck = function(checked) {
@@ -847,7 +844,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //获取cssRule
     Class.prototype.getCssRule = function(field, callback) {
-        var that = this,
+        let that = this,
             style = that.elem.find('style')[0],
             sheet = style.sheet || style.styleSheet,
             rules = sheet.cssRules || sheet.rules
@@ -860,7 +857,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //铺满表格主体高度
     Class.prototype.fullSize = function() {
-        var that = this,
+        let that = this,
             options = that.config,
             height = options.height,
             bodyHeight
@@ -884,7 +881,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //获取滚动条宽度
     Class.prototype.getScrollWidth = function(elem) {
-        var width = 0
+        let width = 0
         if (elem) {
             width = elem.offsetWidth - elem.clientWidth
         } else {
@@ -902,7 +899,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //滚动条补丁
     Class.prototype.scrollPatch = function() {
-        var that = this,
+        let that = this,
             layMainTable = that.layMain.children('table'),
             scollWidth = that.layMain.width() - that.layMain.prop('clientWidth'), //纵向滚动条宽度
             scollHeight = that.layMain.height() - that.layMain.prop('clientHeight'), //横向滚动条高度
@@ -911,10 +908,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         //如果存在自动列宽，则要保证绝对填充满，并且不能出现横向滚动条
         if (that.autoColNums && outWidth < 5 && !that.scrollPatchWStatus) {
-            var th = that.layHeader.eq(0).find('thead th:last-child'),
+            let th = that.layHeader.eq(0).find('thead th:last-child'),
                 field = th.data('field')
             that.getCssRule(field, function(item) {
-                var width = item.style.width || th.outerWidth()
+                let width = item.style.width || th.outerWidth()
                 item.style.width = parseFloat(width) - getScrollWidth - outWidth + 'px'
 
                 //二次校验，如果仍然出现横向滚动条
@@ -928,7 +925,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         if (scollWidth && scollHeight) {
             if (!that.elem.find('.layui-table-patch')[0]) {
-                var patchElem = $(
+                let patchElem = $(
                     '<th class="layui-table-patch"><div class="layui-table-cell"></div></th>'
                 ) //补丁元素
                 patchElem.find('div').css({
@@ -947,7 +944,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         }
 
         //固定列区域高度
-        var mainHeight = that.layMain.height(),
+        let mainHeight = that.layMain.height(),
             fixHeight = mainHeight - scollHeight
         that.layFixed
             .find(ELEM_BODY)
@@ -962,7 +959,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //事件处理
     Class.prototype.events = function() {
-        var that = this,
+        let that = this,
             options = that.config,
             _BODY = $('body'),
             dict = {},
@@ -974,7 +971,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         //拖拽调整宽度
         th
             .on('mousemove', function(e) {
-                var othis = $(this),
+                let othis = $(this),
                     oLeft = othis.offset().left,
                     pLeft = e.clientX - oLeft
                 if (othis.attr('colspan') > 1 || othis.data('unresize') || dict.resizeStart) {
@@ -984,20 +981,19 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 _BODY.css('cursor', dict.allowResize ? 'col-resize' : '')
             })
             .on('mouseleave', function() {
-                var othis = $(this)
                 if (dict.resizeStart) return
                 _BODY.css('cursor', '')
             })
             .on('mousedown', function(e) {
-                var othis = $(this)
+                let othis = $(this)
                 if (dict.allowResize) {
-                    var field = othis.data('field')
+                    let field = othis.data('field')
                     e.preventDefault()
                     dict.resizeStart = true //开始拖拽
                     dict.offset = [e.clientX, e.clientY] //记录初始坐标
 
                     that.getCssRule(field, function(item) {
-                        var width = item.style.width || othis.outerWidth()
+                        let width = item.style.width || othis.outerWidth()
                         dict.rule = item
                         dict.ruleWidth = parseFloat(width)
                         dict.minWidth = othis.data('minwidth') || options.cellMinWidth
@@ -1010,7 +1006,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 if (dict.resizeStart) {
                     e.preventDefault()
                     if (dict.rule) {
-                        var setWidth = dict.ruleWidth + e.clientX - dict.offset[0]
+                        let setWidth = dict.ruleWidth + e.clientX - dict.offset[0]
                         if (setWidth < dict.minWidth) setWidth = dict.minWidth
                         dict.rule.style.width = setWidth + 'px'
                         layer.close(that.tipsIndex)
@@ -1018,7 +1014,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     resizing = 1
                 }
             })
-            .on('mouseup', function(e) {
+            .on('mouseup', function() {
                 if (dict.resizeStart) {
                     dict = {}
                     _BODY.css('cursor', '')
@@ -1032,7 +1028,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         //排序
         th
             .on('click', function() {
-                var othis = $(this),
+                let othis = $(this),
                     elemSort = othis.find(ELEM_SORT),
                     nowType = elemSort.attr('lay-sort'),
                     type
@@ -1050,7 +1046,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             })
             .find(ELEM_SORT + ' .layui-edge ')
             .on('click', function(e) {
-                var othis = $(this),
+                let othis = $(this),
                     index = othis.index(),
                     field = othis
                         .parents('th')
@@ -1066,7 +1062,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         //复选框选择
         that.elem.on('click', 'input[name="layTableCheckbox"]+', function() {
-            var checkbox = $(this).prev(),
+            let checkbox = $(this).prev(),
                 childs = that.layBody.find('input[name="layTableCheckbox"]'),
                 index = checkbox
                     .parents('tr')
@@ -1079,12 +1075,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             if (isAll) {
                 childs.each(function(i, item) {
                     item.checked = checked
-<<<<<<< HEAD
-                    that.setCheckData(i, checked)
-=======
-                    var $tr = $(item).parents('tr')
+                    let $tr = $(item).parents('tr')
                     that.setCheckData($tr.data('index'), checked)
->>>>>>> 661ee0642d9fb329b5d1228358301cffc5ef10e5
                 })
                 that.syncCheckAll()
                 that.renderForm('checkbox')
@@ -1102,12 +1094,12 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         //行事件
         that.layBody
             .on('mouseenter', 'tr', function() {
-                var othis = $(this),
+                let othis = $(this),
                     index = othis.index()
                 that.layBody.find('tr:eq(' + index + ')').addClass(ELEM_HOVER)
             })
             .on('mouseleave', 'tr', function() {
-                var othis = $(this),
+                let othis = $(this),
                     index = othis.index()
                 that.layBody.find('tr:eq(' + index + ')').removeClass(ELEM_HOVER)
             })
@@ -1115,7 +1107,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         //单元格编辑
         that.layBody
             .on('change', '.' + ELEM_EDIT, function() {
-                var othis = $(this),
+                let othis = $(this),
                     value = this.value,
                     field = othis.parent().data('field'),
                     index = othis
@@ -1133,7 +1125,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 })
             })
             .on('blur', '.' + ELEM_EDIT, function() {
-                var templet,
+                let templet,
                     othis = $(this),
                     field = othis.parent().data('field'),
                     index = othis
@@ -1157,8 +1149,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         //单元格事件
         that.layBody.on('click', 'td', function() {
-            var othis = $(this),
-                field = othis.data('field'),
+            let othis = $(this),
                 editType = othis.data('edit'),
                 elemCell = othis.children(ELEM_CELL)
 
@@ -1173,7 +1164,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     //othis.find('.'+ELEM_EDIT)[0] || othis.append(select);
                 } else {
                     //输入框
-                    var input = $('<input class="layui-input ' + ELEM_EDIT + '">')
+                    let input = $('<input class="layui-input ' + ELEM_EDIT + '">')
                     input[0].value = othis.data('content') || elemCell.text()
                     othis.find('.' + ELEM_EDIT)[0] || othis.append(input)
                     input.focus()
@@ -1224,7 +1215,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         //工具条操作事件
         that.layBody.on('click', '*[lay-event]', function() {
-            var othis = $(this),
+            let othis = $(this),
                 index = othis
                     .parents('tr')
                     .eq(0)
@@ -1246,7 +1237,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     fields = fields || {}
                     layui.each(fields, function(key, value) {
                         if (key in data) {
-                            var templet,
+                            let templet,
                                 td = tr.children('td[data-field="' + key + '"]')
                             data[key] = value
                             that.eachCols(function(i, item2) {
@@ -1274,7 +1265,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         //同步滚动条
         that.layMain.on('scroll', function() {
-            var othis = $(this),
+            let othis = $(this),
                 scrollLeft = othis.scrollLeft(),
                 scrollTop = othis.scrollTop()
 
@@ -1291,113 +1282,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         })
     }
 
-<<<<<<< HEAD
-    //初始化
-    table.init = function(filter, settings) {
-        settings = settings || {}
-        var that = this,
-            elemTable = filter ? $('table[lay-filter="' + filter + '"]') : $(ELEM + '[lay-data]'),
-            errorTips = 'Table element property lay-data configuration item has a syntax error: '
-
-        //遍历数据表格
-        elemTable.each(function() {
-            var othis = $(this),
-                tableData = othis.attr('lay-data')
-
-            try {
-                tableData = new Function('return ' + tableData)()
-            } catch (e) {
-                hint.error(errorTips + tableData)
-            }
-
-            var cols = [],
-                options = $.extend(
-                    {
-                        elem: this,
-                        cols: [],
-                        data: [],
-                        skin: othis.attr('lay-skin'), //风格
-                        size: othis.attr('lay-size'), //尺寸
-                        even: typeof othis.attr('lay-even') === 'string' //偶数行背景
-                    },
-                    table.config,
-                    settings,
-                    tableData
-                )
-
-            filter && othis.hide()
-
-            //获取表头数据
-            othis.find('thead>tr').each(function(i) {
-                options.cols[i] = []
-                $(this)
-                    .children()
-                    .each(function(ii) {
-                        var th = $(this),
-                            itemData = th.attr('lay-data')
-
-                        try {
-                            itemData = new Function('return ' + itemData)()
-                        } catch (e) {
-                            return hint.error(errorTips + itemData)
-                        }
-
-                        var row = $.extend(
-                            {
-                                title: th.text(),
-                                colspan: th.attr('colspan') || 0, //列单元格
-                                rowspan: th.attr('rowspan') || 0 //行单元格
-                            },
-                            itemData
-                        )
-
-                        if (row.colspan < 2) cols.push(row)
-                        options.cols[i].push(row)
-                    })
-            })
-
-            //获取表体数据
-            othis.find('tbody>tr').each(function(i1) {
-                var tr = $(this),
-                    row = {}
-                //如果定义了字段名
-                tr.children('td').each(function(i2, item2) {
-                    var td = $(this),
-                        field = td.data('field')
-                    if (field) {
-                        return (row[field] = td.html())
-                    }
-                })
-                //如果未定义字段名
-                layui.each(cols, function(i3, item3) {
-                    var td = tr.children('td').eq(i3)
-                    row[item3.field] = td.html()
-                })
-                options.data[i1] = row
-            })
-            table.render(options)
-        })
-
-        return that
-    }
-
-    //表格选中状态
-    table.checkStatus = function(id) {
-        var nums = 0,
-            invalidNum = 0,
-            arr = [],
-            data = table.cache[id]
-        if (!data) return {}
-        //计算全选个数
-        layui.each(data, function(i, item) {
-            if (item.constructor === Array) {
-                invalidNum++ //无效数据，或已删除的
-                return
-            }
-            if (item[table.config.checkName]) {
-                nums++
-                arr.push(table.clearCacheKey(item))
-=======
     Class.prototype.deleteRow = function(index) {
         let $tr = this.layBody.find('tr[data-index="' + index + '"]')
 
@@ -1421,7 +1305,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             if (item[table.config.checkName]) {
                 nums++
                 arr.push(item)
->>>>>>> 661ee0642d9fb329b5d1228358301cffc5ef10e5
             }
         })
         return {
@@ -1430,18 +1313,16 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         }
     }
 
-<<<<<<< HEAD
-=======
     //初始化
     table.init = function(filter, settings) {
         settings = settings || {}
-        var that = this,
+        let that = this,
             elemTable = filter ? $('table[lay-filter="' + filter + '"]') : $(ELEM + '[lay-data]'),
             errorTips = 'Table element property lay-data configuration item has a syntax error: '
 
         //遍历数据表格
         elemTable.each(function() {
-            var othis = $(this),
+            let othis = $(this),
                 tableData = othis.attr('lay-data')
 
             try {
@@ -1450,7 +1331,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 hint.error(errorTips + tableData)
             }
 
-            var cols = [],
+            let cols = [],
                 options = $.extend(
                     {
                         elem: this,
@@ -1472,8 +1353,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 options.cols[i] = []
                 $(this)
                     .children()
-                    .each(function(ii) {
-                        var th = $(this),
+                    .each(function() {
+                        let th = $(this),
                             itemData = th.attr('lay-data')
 
                         try {
@@ -1482,7 +1363,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                             return hint.error(errorTips + itemData)
                         }
 
-                        var row = $.extend(
+                        let row = $.extend(
                             {
                                 title: th.text(),
                                 colspan: th.attr('colspan') || 0, //列单元格
@@ -1498,11 +1379,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
             //获取表体数据
             othis.find('tbody>tr').each(function(i1) {
-                var tr = $(this),
+                let tr = $(this),
                     row = {}
                 //如果定义了字段名
-                tr.children('td').each(function(i2, item2) {
-                    var td = $(this),
+                tr.children('td').each(function() {
+                    let td = $(this),
                         field = td.data('field')
                     if (field) {
                         return (row[field] = td.html())
@@ -1510,7 +1391,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 })
                 //如果未定义字段名
                 layui.each(cols, function(i3, item3) {
-                    var td = tr.children('td').eq(i3)
+                    let td = tr.children('td').eq(i3)
                     row[item3.field] = td.html()
                 })
                 options.data[i1] = row
@@ -1523,7 +1404,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //表格选中状态
     table.checkStatus = function(id) {
-        var nums = 0,
+        let nums = 0,
             invalidNum = 0,
             arr = [],
             data = table.cache[id]
@@ -1545,18 +1426,17 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         }
     }
 
->>>>>>> 661ee0642d9fb329b5d1228358301cffc5ef10e5
     //表格重载
     thisTable.config = {}
     table.reload = function(id, options) {
-        var config = thisTable.config[id]
+        let config = thisTable.config[id]
         if (!config) return hint.error('The ID option was not found in the table instance')
         return table.render($.extend(true, {}, config, options))
     }
 
     //核心入口
     table.render = function(options) {
-        var inst = new Class(options)
+        let inst = new Class(options)
         return thisTable.call(inst)
     }
 

@@ -10,6 +10,7 @@
   "license": "MIT",
   "scripts": {
     "dist": "gulp all",
+    "precommit": "lint-staged",
     "test": "karma start karma.conf.unit.js",
     "test:cov": "npm test -- --reporters mocha,coverage",
     "test:sauce": "karma start karma.conf.sauce.js",
@@ -27,7 +28,6 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-stage-2": "^6.24.1",
-    "chai": "^4.1.1",
     "del": "^2.2.2",
     "eslint": "^4.12.0",
     "eslint-plugin-prettier": "^2.3.1",
@@ -40,20 +40,9 @@
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^3.0.0",
     "husky": "^0.14.3",
-    "karma": "^1.5.0",
-    "karma-chai": "^0.1.0",
-    "karma-chai-sinon": "^0.1.5",
-    "karma-coverage": "^1.1.1",
-    "karma-mocha": "^1.3.0",
-    "karma-mocha-reporter": "^2.2.3",
-    "karma-phantomjs-launcher": "^1.0.4",
-    "karma-sauce-launcher": "^1.1.0",
     "lint-staged": "^5.0.0",
     "minimist": "^1.2.0",
-    "mocha": "^3.2.0",
-    "prettier": "^1.8.2",
-    "sinon": "^3.2.1",
-    "sinon-chai": "^2.13.0"
+    "prettier": "^1.8.2"
   },
   "bugs": {
     "url": "https://github.com/sentsin/layui/issues"
@@ -67,5 +56,8 @@
   "keywords": [
     "layui",
     "ui"
-  ]
+  ],
+  "lint-staged": {
+    "*.js": ["eslint --fix", "git add"]
+  }
 }
