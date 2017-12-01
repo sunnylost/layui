@@ -46,6 +46,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             id && (thisTable.config[id] = options)
 
             return {
+                table: this,
                 reload: function(options) {
                     that.reload.call(that, options)
                 },
@@ -1078,7 +1079,12 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             if (isAll) {
                 childs.each(function(i, item) {
                     item.checked = checked
+<<<<<<< HEAD
                     that.setCheckData(i, checked)
+=======
+                    var $tr = $(item).parents('tr')
+                    that.setCheckData($tr.data('index'), checked)
+>>>>>>> 661ee0642d9fb329b5d1228358301cffc5ef10e5
                 })
                 that.syncCheckAll()
                 that.renderForm('checkbox')
@@ -1285,6 +1291,147 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         })
     }
 
+<<<<<<< HEAD
+    //初始化
+    table.init = function(filter, settings) {
+        settings = settings || {}
+        var that = this,
+            elemTable = filter ? $('table[lay-filter="' + filter + '"]') : $(ELEM + '[lay-data]'),
+            errorTips = 'Table element property lay-data configuration item has a syntax error: '
+
+        //遍历数据表格
+        elemTable.each(function() {
+            var othis = $(this),
+                tableData = othis.attr('lay-data')
+
+            try {
+                tableData = new Function('return ' + tableData)()
+            } catch (e) {
+                hint.error(errorTips + tableData)
+            }
+
+            var cols = [],
+                options = $.extend(
+                    {
+                        elem: this,
+                        cols: [],
+                        data: [],
+                        skin: othis.attr('lay-skin'), //风格
+                        size: othis.attr('lay-size'), //尺寸
+                        even: typeof othis.attr('lay-even') === 'string' //偶数行背景
+                    },
+                    table.config,
+                    settings,
+                    tableData
+                )
+
+            filter && othis.hide()
+
+            //获取表头数据
+            othis.find('thead>tr').each(function(i) {
+                options.cols[i] = []
+                $(this)
+                    .children()
+                    .each(function(ii) {
+                        var th = $(this),
+                            itemData = th.attr('lay-data')
+
+                        try {
+                            itemData = new Function('return ' + itemData)()
+                        } catch (e) {
+                            return hint.error(errorTips + itemData)
+                        }
+
+                        var row = $.extend(
+                            {
+                                title: th.text(),
+                                colspan: th.attr('colspan') || 0, //列单元格
+                                rowspan: th.attr('rowspan') || 0 //行单元格
+                            },
+                            itemData
+                        )
+
+                        if (row.colspan < 2) cols.push(row)
+                        options.cols[i].push(row)
+                    })
+            })
+
+            //获取表体数据
+            othis.find('tbody>tr').each(function(i1) {
+                var tr = $(this),
+                    row = {}
+                //如果定义了字段名
+                tr.children('td').each(function(i2, item2) {
+                    var td = $(this),
+                        field = td.data('field')
+                    if (field) {
+                        return (row[field] = td.html())
+                    }
+                })
+                //如果未定义字段名
+                layui.each(cols, function(i3, item3) {
+                    var td = tr.children('td').eq(i3)
+                    row[item3.field] = td.html()
+                })
+                options.data[i1] = row
+            })
+            table.render(options)
+        })
+
+        return that
+    }
+
+    //表格选中状态
+    table.checkStatus = function(id) {
+        var nums = 0,
+            invalidNum = 0,
+            arr = [],
+            data = table.cache[id]
+        if (!data) return {}
+        //计算全选个数
+        layui.each(data, function(i, item) {
+            if (item.constructor === Array) {
+                invalidNum++ //无效数据，或已删除的
+                return
+            }
+            if (item[table.config.checkName]) {
+                nums++
+                arr.push(table.clearCacheKey(item))
+=======
+    Class.prototype.deleteRow = function(index) {
+        let $tr = this.layBody.find('tr[data-index="' + index + '"]')
+
+        table.cache[this.key][index] = []
+        $tr.remove()
+        this.scrollPatch()
+    }
+
+    Class.prototype.getChecked = function() {
+        let nums = 0,
+            invalidNum = 0,
+            arr = [],
+            data = table.cache[this.key]
+        if (!data) return {}
+        //计算全选个数
+        layui.each(data, function(i, item) {
+            if (item.constructor === Array) {
+                invalidNum++ //无效数据，或已删除的
+                return
+            }
+            if (item[table.config.checkName]) {
+                nums++
+                arr.push(item)
+>>>>>>> 661ee0642d9fb329b5d1228358301cffc5ef10e5
+            }
+        })
+        return {
+            data: arr, //选中的数据
+            isAll: nums === data.length - invalidNum //是否全选
+        }
+    }
+
+<<<<<<< HEAD
+=======
     //初始化
     table.init = function(filter, settings) {
         settings = settings || {}
@@ -1398,6 +1545,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         }
     }
 
+>>>>>>> 661ee0642d9fb329b5d1228358301cffc5ef10e5
     //表格重载
     thisTable.config = {}
     table.reload = function(id, options) {
