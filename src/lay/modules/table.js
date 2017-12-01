@@ -192,14 +192,55 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             '</div>'
         ].join(''),
         _WIN = $(window),
-        _DOC = $(document),
-        //构造器
-        Class = function(options) {
-            let that = this
-            that.index = ++table.index
-            that.config = $.extend({}, that.config, table.config, options)
-            that.render()
+        _DOC = $(document)
+
+    const RESPONSE_PROPS = ['statusName', 'msgName', 'dataName', 'countName']
+    /**
+     * 获取 obj 上的属性，props 为属性数组
+     * @param obj
+     * @param props
+     * @returns {*}
+     */
+    function getProp(obj, props) {
+        let val = obj[props[0]]
+
+        for (let i = 1; i < props.length; i++) {
+            if (val) {
+                val = val[props[i]]
+            }
         }
+
+        return val
+    }
+
+    /**
+     * 设置 obj 的属性值，props 为属性数组
+     * @param obj
+     * @param props
+     * @param val
+     */
+    function setProp(obj, props, val) {
+        if (props.length === 1) {
+            obj[props[0]] = val
+        } else {
+            for (let i = 0; i < props.length - 1; i++) {
+                if (obj) {
+                    obj = obj[props[i]]
+                }
+            }
+
+            if (obj) {
+                obj[props[props.length - 1]] = val
+            }
+        }
+    }
+    //构造器
+    let Class = function(options) {
+        let that = this
+        that.index = ++table.index
+        that.config = $.extend({}, that.config, table.config, options)
+        that.render()
+    }
 
     //默认配置
     Class.prototype.config = {
@@ -237,6 +278,12 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             },
             options.response
         )
+
+        let key
+        for (let i = 0; i < RESPONSE_PROPS.length; i++) {
+            key = RESPONSE_PROPS[i]
+            options.response[key] = options.response[key].split('.')
+        }
 
         //如果 page 传入 laypage 对象
         if (typeof options.page === 'object') {
@@ -441,21 +488,21 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 data: $.extend(params, options.where),
                 dataType: 'json',
                 success: function(res) {
-                    if (res[response.statusName] != response.statusCode) {
+                    if (getProp(res, response.statusName) != response.statusCode) {
                         that.renderForm()
                         return that.layMain.html(
                             '<div class="' +
                                 NONE +
                                 '">' +
-                                (res[response.msgName] || '返回的数据状态异常') +
+                                (getProp(res, response.msgName) || '返回的数据状态异常') +
                                 '</div>'
                         )
                     }
-                    that.renderData(res, curr, res[response.countName]), sort()
+                    that.renderData(res, curr, getProp(res, response.countName)), sort()
                     options.time = new Date().getTime() - that.startTime + ' ms' //耗时（接口请求+视图渲染）
                     loadIndex && layer.close(loadIndex)
                     typeof options.done === 'function' &&
-                        options.done(res, curr, res[response.countName])
+                        options.done(res, curr, getProp(res, response.countName))
                 },
                 error: function() {
                     that.layMain.html('<div class="' + NONE + '">数据接口请求异常</div>')
@@ -468,11 +515,12 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             let res = {},
                 startLimit = curr * options.limit - options.limit
 
-            res[response.dataName] = options.data.concat().splice(startLimit, options.limit)
-            res[response.countName] = options.data.length
+            setProp(res, response.dataName, options.data.concat().splice(startLimit, options.limit))
+            setProp(res, response.countName, options.data.length)
 
             that.renderData(res, curr, options.data.length), sort()
-            typeof options.done === 'function' && options.done(res, curr, res[response.countName])
+            typeof options.done === 'function' &&
+                options.done(res, curr, getProp(res, response.countName))
         }
     }
 
@@ -517,7 +565,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     Class.prototype.renderData = function(res, curr, count, sort) {
         let that = this,
             options = that.config,
-            data = res[options.response.dataName] || [],
+            data = getProp(res, options.response.dataName) || [],
             trs = [],
             trs_fixed = [],
             trs_fixed_r = [],
