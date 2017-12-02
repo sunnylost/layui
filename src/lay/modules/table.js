@@ -70,6 +70,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         ELEM_EDIT = 'layui-table-edit',
         ELEM_HOVER = 'layui-table-hover',
         ROW_EXPANDED = 'layui-row-expanded',
+        BLANK_FN = () => {},
         //thead区域模板
         TPL_HEADER = function(options) {
             options = options || {}
@@ -570,6 +571,23 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         eachArrs()
     }
 
+    function getSpan(fn, row, column, rowIndex, columnIndex) {
+        let rowspan = 1
+        let colspan = 1
+
+        let ret = fn(row, column, rowIndex, columnIndex)
+
+        if (ret) {
+            rowspan = ret.rowspan || 0
+            colspan = ret.colspan || 0
+        }
+
+        return {
+            rowspan,
+            colspan
+        }
+    }
+
     //数据渲染
     Class.prototype.renderData = function(res, curr, count, sort) {
         let that = this,
@@ -584,6 +602,9 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 if (!sort && that.sortKey) {
                     return that.sort(that.sortKey.field, that.sortKey.sort, true)
                 }
+
+                let cellSpan = options.cellSpan || BLANK_FN
+
                 layui.each(data, function(i1, item1) {
                     let tds = [],
                         tds_fixed = [],
@@ -602,6 +623,23 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                         if (content === undefined || content === null) content = ''
                         if (item3.colspan > 1) return
 
+                        let span = getSpan(cellSpan, item1, item3, i1, i3)
+
+                        if (!span.rowspan || !span.colspan) {
+                            return
+                        }
+
+                        let colspan = ''
+                        let rowspan = ''
+
+                        if (span.colspan !== 1) {
+                            colspan = 'colspan=' + span.colspan
+                        }
+
+                        if (span.rowspan !== 1) {
+                            rowspan = 'rowspan=' + span.rowspan
+                        }
+
                         //td内容
                         let td = [
                             '<td data-field="' +
@@ -618,8 +656,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                     if (item3.minWidth)
                                         attr.push('data-minwidth="' + item3.minWidth + '"') //单元格最小宽度
                                     return attr.join(' ')
-                                })() +
-                                '>',
+                                })(),
+                            colspan,
+                            rowspan,
+                            '>',
                             '<div class="layui-table-cell laytable-cell-' +
                                 (function() {
                                     //返回对应的CSS类标识
