@@ -968,7 +968,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     Class.prototype.getCssRule = function(field, callback) {
         let that = this,
             style = that.elem.find('style')[0],
-            sheet = style.sheet || style.styleSheet,
+            sheet = style.sheet || style.styleSheet || {},
             rules = sheet.cssRules || sheet.rules
         layui.each(rules, function(i, item) {
             if (item.selectorText === '.laytable-cell-' + that.index + '-' + field) {
@@ -1204,8 +1204,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     .data('index'),
                 checked = checkbox[0].checked,
                 isAll = checkbox.attr('lay-filter') === 'layTableAllChoose'
-            let allData = table.cache[that.key]
-            let data = allData[index]
+            let allData = table.cache[that.key] || []
+            let data = allData[index] || {}
 
             //全选
             if (isAll) {
@@ -1485,8 +1485,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         let nums = 0,
             invalidNum = 0,
             arr = [],
-            data = table.cache[this.key]
-        if (!data) return {}
+            data = table.cache[this.key] || []
+
         //计算全选个数
         layui.each(data, function(i, item) {
             if (item.constructor === Array) {
@@ -1500,7 +1500,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         })
         return {
             data: arr, //选中的数据
-            isAll: nums === data.length - invalidNum //是否全选
+            isAll: data.length ? nums === data.length - invalidNum : false //是否全选
         }
     }
 
