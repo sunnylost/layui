@@ -8,6 +8,25 @@
 layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     'use strict'
 
+    const MOD_NAME = 'table'
+    const ELEM = '.layui-table'
+    const HIDE = 'layui-hide'
+    const NONE = 'layui-none'
+    const ELEM_VIEW = 'layui-table-view'
+    const ELEM_HEADER = '.layui-table-header'
+    const ELEM_BODY = '.layui-table-body'
+    const ELEM_MAIN = '.layui-table-main'
+    const ELEM_FIXED = '.layui-table-fixed'
+    const ELEM_FIXL = '.layui-table-fixed-l'
+    const ELEM_FIXR = '.layui-table-fixed-r'
+    const ELEM_TOOL = '.layui-table-tool'
+    const ELEM_PAGE = '.layui-table-page'
+    const ELEM_SORT = '.layui-table-sort'
+    const ELEM_EDIT = 'layui-table-edit'
+    const ELEM_HOVER = 'layui-table-hover'
+    const ROW_EXPANDED = 'layui-row-expanded'
+    const BLANK_FN = () => {}
+
     let $ = layui.$,
         laytpl = layui.laytpl,
         laypage = layui.laypage,
@@ -36,41 +55,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 return layui.onevent.call(this, MOD_NAME, events, callback)
             }
         },
-        //操作当前实例
-        thisTable = function() {
-            let that = this,
-                options = that.config,
-                id = options.id
-
-            id && (thisTable.config[id] = options)
-
-            return {
-                table: this,
-                reload: function(options) {
-                    that.reload.call(that, options)
-                },
-                config: options
-            }
-        },
-        //字符常量
-        MOD_NAME = 'table',
-        ELEM = '.layui-table',
-        HIDE = 'layui-hide',
-        NONE = 'layui-none',
-        ELEM_VIEW = 'layui-table-view',
-        ELEM_HEADER = '.layui-table-header',
-        ELEM_BODY = '.layui-table-body',
-        ELEM_MAIN = '.layui-table-main',
-        ELEM_FIXED = '.layui-table-fixed',
-        ELEM_FIXL = '.layui-table-fixed-l',
-        ELEM_FIXR = '.layui-table-fixed-r',
-        ELEM_TOOL = '.layui-table-tool',
-        ELEM_PAGE = '.layui-table-page',
-        ELEM_SORT = '.layui-table-sort',
-        ELEM_EDIT = 'layui-table-edit',
-        ELEM_HOVER = 'layui-table-hover',
-        ROW_EXPANDED = 'layui-row-expanded',
-        BLANK_FN = () => {},
         //thead区域模板
         TPL_HEADER = function(options) {
             options = options || {}
@@ -238,7 +222,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         }
     }
     //构造器
-    let Class = function(options) {
+    let Table = function(options) {
         let that = this
         that.index = ++table.index
         that.config = $.extend({}, that.config, table.config, options)
@@ -246,14 +230,14 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //默认配置
-    Class.prototype.config = {
+    Table.prototype.config = {
         limit: 10, //每页显示的数量
         loading: true, //请求数据时，是否显示loading
         cellMinWidth: 60 //所有单元格默认最小宽度
     }
 
     //表格渲染
-    Class.prototype.render = function() {
+    Table.prototype.render = function() {
         let that = this,
             options = that.config
 
@@ -356,7 +340,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //根据列类型，定制化参数
-    Class.prototype.initOpts = function(item) {
+    Table.prototype.initOpts = function(item) {
         let initWidth = {
             checkbox: 48,
             space: 15,
@@ -376,7 +360,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //动态分配列宽高
-    Class.prototype.setArea = function() {
+    Table.prototype.setArea = function() {
         let that = this,
             options = that.config,
             colNums = 0, //列个数
@@ -463,17 +447,17 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //表格重载
-    Class.prototype.reload = function(options) {
+    Table.prototype.reload = function(options) {
         let that = this
         that.config = $.extend({}, that.config, options)
         that.render()
     }
 
     //页码
-    Class.prototype.page = 1
+    Table.prototype.page = 1
 
     //获得数据
-    Class.prototype.pullData = function(curr, loadIndex) {
+    Table.prototype.pullData = function(curr, loadIndex) {
         let that = this,
             options = that.config,
             request = options.request,
@@ -535,7 +519,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //遍历表头
-    Class.prototype.eachCols = function(callback) {
+    Table.prototype.eachCols = function(callback) {
         let cols = $.extend(true, [], this.config.cols),
             arrs = [],
             index = 0
@@ -589,7 +573,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //数据渲染
-    Class.prototype.renderData = function(res, curr, count, sort) {
+    Table.prototype.renderData = function(res, curr, count, sort) {
         let that = this,
             options = that.config,
             data = getProp(res, options.response.dataName) || [],
@@ -819,19 +803,19 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //找到对应的列元素
-    Class.prototype.getColElem = function(parent, field) {
+    Table.prototype.getColElem = function(parent, field) {
         let that = this,
             options = that.config
         return parent.eq(0).find('.laytable-cell-' + (options.index + '-' + field) + ':eq(0)')
     }
 
     //渲染表单
-    Class.prototype.renderForm = function(type) {
+    Table.prototype.renderForm = function(type) {
         form.render(type, 'LAY-table-' + this.index)
     }
 
     //数据排序
-    Class.prototype.sort = function(th, type, pull, formEvent) {
+    Table.prototype.sort = function(th, type, pull, formEvent) {
         let that = this,
             field,
             res = {},
@@ -907,7 +891,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //请求loading
-    Class.prototype.loading = function() {
+    Table.prototype.loading = function() {
         let that = this,
             options = that.config
         if (options.loading && options.url) {
@@ -924,7 +908,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //同步选中值状态
-    Class.prototype.setCheckData = function(index, checked) {
+    Table.prototype.setCheckData = function(index, checked) {
         let that = this,
             options = that.config,
             thisData = table.cache[that.key]
@@ -934,7 +918,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //同步全选按钮状态
-    Class.prototype.syncCheckAll = function() {
+    Table.prototype.syncCheckAll = function() {
         let that = this,
             options = that.config,
             checkAllElem = that.layHeader.find('input[name="layTableCheckbox"]'),
@@ -965,7 +949,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //获取cssRule
-    Class.prototype.getCssRule = function(field, callback) {
+    Table.prototype.getCssRule = function(field, callback) {
         let that = this,
             style = that.elem.find('style')[0],
             sheet = style.sheet || style.styleSheet || {},
@@ -978,7 +962,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //铺满表格主体高度
-    Class.prototype.fullSize = function() {
+    Table.prototype.fullSize = function() {
         let that = this,
             options = that.config,
             height = options.height,
@@ -1002,7 +986,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //获取滚动条宽度
-    Class.prototype.getScrollWidth = function(elem) {
+    Table.prototype.getScrollWidth = function(elem) {
         let width = 0
         if (elem) {
             width = elem.offsetWidth - elem.clientWidth
@@ -1020,7 +1004,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //滚动条补丁
-    Class.prototype.scrollPatch = function() {
+    Table.prototype.scrollPatch = function() {
         let that = this,
             layMainTable = that.layMain.children('table'),
             scollWidth = that.layMain.width() - that.layMain.prop('clientWidth'), //纵向滚动条宽度
@@ -1080,7 +1064,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //事件处理
-    Class.prototype.events = function() {
+    Table.prototype.events = function() {
         let that = this,
             options = that.config,
             _BODY = $('body'),
@@ -1473,7 +1457,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         })
     }
 
-    Class.prototype.deleteRow = function(index) {
+    Table.prototype.deleteRow = function(index) {
         let $tr = this.layBody.find('tr[data-index="' + index + '"]')
 
         table.cache[this.key][index] = []
@@ -1481,7 +1465,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         this.scrollPatch()
     }
 
-    Class.prototype.getChecked = function() {
+    Table.prototype.getChecked = function() {
         let nums = 0,
             invalidNum = 0,
             arr = [],
@@ -1618,17 +1602,24 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     //表格重载
-    thisTable.config = {}
     table.reload = function(id, options) {
-        let config = thisTable.config[id]
+        let config = table.instances[id]
         if (!config) return hint.error('The ID option was not found in the table instance')
         return table.render($.extend(true, {}, config, options))
     }
 
     //核心入口
     table.render = function(options) {
-        let inst = new Class(options)
-        return thisTable.call(inst)
+        let inst = new Table(options)
+
+        let opts = inst.config,
+            id = opts.id
+
+        id && (table.instances[id] = opts)
+
+        inst.table = inst
+
+        return inst
     }
 
     //清除临时Key
@@ -1638,6 +1629,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         delete data[table.config.indexName]
         return data
     }
+
+    table.instances = {}
 
     //自动完成渲染
     table.init()
