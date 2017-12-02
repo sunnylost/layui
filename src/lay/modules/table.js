@@ -286,7 +286,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         let key
         for (let i = 0; i < RESPONSE_PROPS.length; i++) {
             key = RESPONSE_PROPS[i]
-            options.response[key] = options.response[key].split('.')
+            let respVal = options.response[key]
+
+            if (respVal && typeof respVal === 'string') {
+                options.response[key] = respVal.split('.')
+            }
         }
 
         //如果 page 传入 laypage 对象
