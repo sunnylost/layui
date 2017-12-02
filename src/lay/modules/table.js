@@ -669,6 +669,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                             (function() {
                                                 let globalChecked = that.config.checked || []
                                                 let checkName = table.config.checkName
+                                                let key = that.config.globalCheck
+
                                                 //如果是全选
                                                 if (item3[checkName]) {
                                                     item1[checkName] = item3[checkName]
@@ -685,8 +687,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                                         return ''
                                                     }
                                                 }
-
-                                                let key = that.config.globalCheck
 
                                                 if (
                                                     key &&
