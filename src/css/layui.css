@@ -631,7 +631,12 @@ hr, .layui-timeline-item:before{background-color: #e6e6e6;}
 
 .laytable-cell-checkbox,
 .laytable-cell-space,
+.laytable-cell-expand,
 .laytable-cell-numbers{padding: 0; text-align: center;}
+
+.laytable-cell-expand {
+    cursor: pointer;
+}
 
 .layui-table-body{position: relative; overflow: auto; margin-right: -1px; margin-bottom: -1px;}
 .layui-table-body .layui-none{line-height: 40px; text-align: center; color: #999;}

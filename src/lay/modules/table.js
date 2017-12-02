@@ -69,52 +69,54 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         ELEM_SORT = '.layui-table-sort',
         ELEM_EDIT = 'layui-table-edit',
         ELEM_HOVER = 'layui-table-hover',
+        ROW_EXPANDED = 'layui-row-expanded',
         //thead区域模板
         TPL_HEADER = function(options) {
+            options = options || {}
+
             let rowCols =
                 '{{#if(item2.colspan){}} colspan="{{item2.colspan}}"{{#} if(item2.rowspan){}} rowspan="{{item2.rowspan}}"{{#}}}'
 
-            options = options || {}
+            let setSkin = '{{# if(d.data.skin){ }}lay-skin="{{d.data.skin}}"{{# } }}'
+            let setSize = '{{# if(d.data.size){ }}lay-size="{{d.data.size}}"{{# } }}'
+            let setEven = '{{# if(d.data.even){ }}lay-even{{# } }}'
+            let generateFixed =
+                `{{# layui.each(item1, function(i2, item2){
+                                    if(item2.fixed && item2.fixed !== "right"){ left = true; }
+                                    if(item2.fixed === "right"){ right = true; } }}` +
+                (function() {
+                    if (options.fixed) {
+                        if (options.fixed === 'right') {
+                            return '{{# if(item2.fixed === "right"){ }}'
+                        } else {
+                            return '{{# if(item2.fixed && item2.fixed !== "right"){ }}'
+                        }
+                    }
+
+                    return ''
+                })()
+
+            let generateCell = `<div class="layui-table-cell laytable-cell-{{# if(item2.colspan > 1){ }}group{{# } else { }}{{d.index}}-{{item2.field || i2}}{{# if(item2.type !== "normal"){ }} laytable-cell-{{ item2.type }}{{# } }}{{# } }}" {{#if(item2.align){}}align="{{item2.align}}"{{#}}}>
+    {{# if(item2.type === "checkbox"){ }}
+    <input type="checkbox" name="layTableCheckbox" lay-skin="primary" lay-filter="layTableAllChoose" {{# if(item2[d.data.checkName]){ }}checked{{# }; }}>
+    {{# } else { }}
+    <span>{{item2.title||""}}</span>
+        {{# if(!(item2.colspan > 1) && item2.sort){ }}
+        <span class="layui-table-sort layui-inline"><i class="layui-edge layui-table-sort-asc"></i><i class="layui-edge layui-table-sort-desc"></i></span>
+        {{# } }}
+    {{# } }}</div>`
+
             return [
-                '<table cellspacing="0" cellpadding="0" border="0" class="layui-table" ',
-                '{{# if(d.data.skin){ }}lay-skin="{{d.data.skin}}"{{# } }} {{# if(d.data.size){ }}lay-size="{{d.data.size}}"{{# } }} {{# if(d.data.even){ }}lay-even{{# } }}>',
-                '<thead>',
+                `<table cellspacing="0" cellpadding="0" border="0" class="layui-table" ${setSkin} ${
+                    setSize
+                } ${setEven}><thead>`,
                 '{{# layui.each(d.data.cols, function(i1, item1){ }}',
                 '<tr>',
-                '{{# layui.each(item1, function(i2, item2){ }}',
-                '{{# if(item2.fixed && item2.fixed !== "right"){ left = true; } }}',
-                '{{# if(item2.fixed === "right"){ right = true; } }}',
-                (function() {
-                    if (options.fixed && options.fixed !== 'right') {
-                        return '{{# if(item2.fixed && item2.fixed !== "right"){ }}'
-                    }
-                    if (options.fixed === 'right') {
-                        return '{{# if(item2.fixed === "right"){ }}'
-                    }
-                    return ''
-                })(),
+                generateFixed,
                 '<th data-field="{{ item2.field||i2 }}" {{# if(item2.minWidth){ }}data-minwidth="{{item2.minWidth}}"{{# } }} ' +
                     rowCols +
                     ' {{# if(item2.unresize){ }}data-unresize="true"{{# } }}>',
-                '<div class="layui-table-cell laytable-cell-',
-                '{{# if(item2.colspan > 1){ }}',
-                'group',
-                '{{# } else { }}',
-                '{{d.index}}-{{item2.field || i2}}',
-                '{{# if(item2.type !== "normal"){ }}',
-                ' laytable-cell-{{ item2.type }}',
-                '{{# } }}',
-                '{{# } }}',
-                '" {{#if(item2.align){}}align="{{item2.align}}"{{#}}}>',
-                '{{# if(item2.type === "checkbox"){ }}', //复选框
-                '<input type="checkbox" name="layTableCheckbox" lay-skin="primary" lay-filter="layTableAllChoose" {{# if(item2[d.data.checkName]){ }}checked{{# }; }}>',
-                '{{# } else { }}',
-                '<span>{{item2.title||""}}</span>',
-                '{{# if(!(item2.colspan > 1) && item2.sort){ }}',
-                '<span class="layui-table-sort layui-inline"><i class="layui-edge layui-table-sort-asc"></i><i class="layui-edge layui-table-sort-desc"></i></span>',
-                '{{# } }}',
-                '{{# } }}',
-                '</div>',
+                generateCell,
                 '</th>',
                 options.fixed ? '{{# }; }}' : '',
                 '{{# }); }}',
@@ -257,6 +259,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         options.elem = $(options.elem)
         options.where = options.where || {}
         options.id = options.id || options.elem.attr('id')
+        options.checked = [] //选中
+        options.expanded = [] //展开
 
         //请求参数的自定义格式
         options.request = $.extend(
@@ -351,7 +355,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         let initWidth = {
             checkbox: 48,
             space: 15,
-            numbers: 40
+            numbers: 40,
+            expand: 48
         }
 
         //让 type 参数兼容旧版本
@@ -647,6 +652,9 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                     } else if (item3.type === 'numbers') {
                                         //渲染序号
                                         return numbers
+                                    } else if (item3.type === 'expand') {
+                                        //渲染展开按钮
+                                        return '<i class="layui-icon layui-table-expand" name="layTableExpand" lay-filter="layTableExpandCurrentRow">&#xe602;</i>'
                                     }
 
                                     //解析工具列模板
@@ -820,7 +828,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             delete that.sortKey
         }
 
-        res[options.response.dataName] = thisData
+        setProp(res, options.response.dataName, thisData)
         that.renderData(res, that.page, that.count, true)
         layer.close(that.tipsIndex)
 
@@ -1137,6 +1145,46 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 data: table.cache[that.key][index],
                 type: isAll ? 'all' : 'one'
             })
+        })
+
+        /**
+         * TODO: 行展开
+         * 指定某些行自动展开
+         * 全部自动展开
+         * 展开/关闭 API
+         */
+        function toggleRow(index) {
+            let $tr = that.elem.find(`tr[data-index="${index}"]`)
+            let $el = $tr.find('.layui-table-expand')
+            let tableData = table.cache[that.key]
+            let field = 'expand'
+            let templet
+            let html
+
+            that.eachCols(function(i, item) {
+                if (item.type === field && item.templet) {
+                    templet = item.templet
+                }
+            })
+
+            html = templet ? laytpl($(templet).html() || this.value).render(tableData[index]) : ''
+
+            if ($tr.hasClass(ROW_EXPANDED)) {
+                $tr.removeClass(ROW_EXPANDED)
+                $el.html('&#xe602;') //right
+                $tr.next('tr').remove()
+            } else {
+                $tr.addClass(ROW_EXPANDED)
+                $el.html('&#xe61a') //down
+                $tr.after(`<tr><td colspan="${that.config.cols[0].length}">${html}</td></tr>`)
+            }
+        }
+        that.elem.on('click', 'i[name="layTableExpand"]', function() {
+            let $el = $(this)
+            let $tr = $el.parents('tr[data-index]')
+            let index = $tr.data('index')
+
+            toggleRow(index)
         })
 
         //行事件
