@@ -13,3 +13,4 @@ layui 修改版
 - 增加 `deleteRow(index)` 删除指定行
 - `response` 属性支持传入 `a.b` 的形式来进行数据格式转换
 - 增加 `cellSpan` 方法来实现单元格合并
+- 增加 `globalCheck` 选项来实现跨页保持选中

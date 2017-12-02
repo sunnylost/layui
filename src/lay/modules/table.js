@@ -683,12 +683,34 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                         return (
                                             '<input type="checkbox" name="layTableCheckbox" lay-skin="primary" ' +
                                             (function() {
+                                                let globalChecked = that.config.checked || []
                                                 let checkName = table.config.checkName
                                                 //如果是全选
                                                 if (item3[checkName]) {
                                                     item1[checkName] = item3[checkName]
-                                                    return item3[checkName] ? 'checked' : ''
+
+                                                    if (item3[checkName]) {
+                                                        if (
+                                                            key &&
+                                                            globalChecked.indexOf(item3) === -1
+                                                        ) {
+                                                            globalChecked.push(tplData[key])
+                                                        }
+                                                        return 'checked'
+                                                    } else {
+                                                        return ''
+                                                    }
                                                 }
+
+                                                let key = that.config.globalCheck
+
+                                                if (
+                                                    key &&
+                                                    globalChecked.indexOf(tplData[key]) !== -1
+                                                ) {
+                                                    return 'checked'
+                                                }
+
                                                 return tplData[checkName] ? 'checked' : ''
                                             })() +
                                             '>'
@@ -1160,8 +1182,20 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 }
             })
 
+        function updateArray(arr, val) {
+            let index = arr.indexOf(val)
+
+            if (index === -1) {
+                arr.push(val)
+            } else {
+                arr.splice(index, 1)
+            }
+        }
+
         //复选框选择
         that.elem.on('click', 'input[name="layTableCheckbox"]+', function() {
+            let tableCheckArr = that.config.checked
+            let key = that.config.globalCheck
             let checkbox = $(this).prev(),
                 childs = that.layBody.find('input[name="layTableCheckbox"]'),
                 index = checkbox
@@ -1170,6 +1204,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     .data('index'),
                 checked = checkbox[0].checked,
                 isAll = checkbox.attr('lay-filter') === 'layTableAllChoose'
+            let allData = table.cache[that.key]
+            let data = allData[index]
 
             //全选
             if (isAll) {
@@ -1184,9 +1220,24 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 that.setCheckData(index, checked)
                 that.syncCheckAll()
             }
+
+            /**
+             * TODO:
+             * 保存选中的数据，用于跨页显示
+             */
+            if (key) {
+                if (isAll) {
+                    layui.each(allData, function(i, v) {
+                        updateArray(tableCheckArr, v[key])
+                    })
+                } else {
+                    updateArray(tableCheckArr, data[key])
+                }
+            }
+
             layui.event.call(this, MOD_NAME, 'checkbox(' + filter + ')', {
                 checked: checked,
-                data: table.cache[that.key][index],
+                data,
                 type: isAll ? 'all' : 'one'
             })
         })
