@@ -1074,6 +1074,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             ELEM_CELL = '.layui-table-cell',
             filter = options.elem.attr('lay-filter')
 
+        options.filter = filter
+
         //拖拽调整宽度
         th
             .on('mousemove', function(e) {
@@ -1605,6 +1607,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     table.reload = function(id, options) {
         let config = table.instances[id]
         if (!config) return hint.error('The ID option was not found in the table instance')
+
+        setTimeout(function() {
+            layui.event.call(this, MOD_NAME, 'reload(' + id + ')')
+        }, 4)
+
         return table.render($.extend(true, {}, config, options))
     }
 

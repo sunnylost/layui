@@ -11,7 +11,7 @@
 </head>
 <body>
 
-<table id="demo"></table>
+<table id="demo" lay-filter="sort"></table>
 
 <script src="../../src/layui.js" charset="utf-8"></script>
 <script>
@@ -42,7 +42,13 @@
             ]]
         });
 
-        console.log(t)
+        table.on('reload(demo)',()=>{
+            console.log('reload')
+        })
+
+        setTimeout(()=>{
+            table.reload('demo')
+        },2000)
     });
 </script>
 </body>
