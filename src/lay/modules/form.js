@@ -33,7 +33,7 @@ layui.define('layer', function(exports) {
                         if (!value || isNaN(value)) return '只能填写数字'
                     },
                     date: [
-                        /^(\d{4})[-/](\d{1}|0\d{1}|1[0-2])([-/](\d{1}|0\d{1}|[1-2][0-9]|3[0-1]))*$/,
+                        /^(\d{4})[-/](\d|0\d|1[0-2])([-/](\d|0\d|[1-2][0-9]|3[0-1]))*$/,
                         '日期格式不正确'
                     ],
                     identity: [/(^\d{15}$)|(^\d{17}(x|X|\d)$)/, '请输入正确的身份证号']
@@ -132,9 +132,12 @@ layui.define('layer', function(exports) {
 
                             //点击标题区域
                             title.on('click', function(e) {
-                                reElem.hasClass(CLASS + 'ed')
-                                    ? hideDown()
-                                    : (hide(e, true), showDown())
+                                if (reElem.hasClass(CLASS + 'ed')) {
+                                    hideDown()
+                                } else {
+                                    hide(e, true)
+                                    showDown()
+                                }
                                 dl.find('.' + NONE).remove()
                             })
 
@@ -176,7 +179,8 @@ layui.define('layer', function(exports) {
                                         othis[not ? 'addClass' : 'removeClass'](HIDE)
                                 })
                                 let none = num === dds.length
-                                return callback(none), none
+                                callback(none)
+                                return none
                             }
 
                             //搜索匹配
@@ -365,19 +369,23 @@ layui.define('layer', function(exports) {
 
                             if (check[0].disabled) return
 
-                            check[0].checked
-                                ? ((check[0].checked = false),
-                                    reElem
-                                        .removeClass(RE_CLASS[1])
-                                        .find('em')
-                                        .text(text[1])
-                                        .text(text[1]))
-                                : ((check[0].checked = true),
-                                    reElem
-                                        .addClass(RE_CLASS[1])
-                                        .find('em')
-                                        .text(text[0])
-                                        .text(text[0]))
+                            if (check[0].checked) {
+                                check[0].checked = false
+
+                                reElem
+                                    .removeClass(RE_CLASS[1])
+                                    .find('em')
+                                    .text(text[1])
+                                    .text(text[1])
+                            } else {
+                                check[0].checked = true
+
+                                reElem
+                                    .addClass(RE_CLASS[1])
+                                    .find('em')
+                                    .text(text[0])
+                                    .text(text[0])
+                            }
 
                             layui.event.call(check[0], MOD_NAME, RE_CLASS[2] + '(' + filter + ')', {
                                 elem: check[0],
@@ -443,7 +451,7 @@ layui.define('layer', function(exports) {
                                     forms = radio.parents(ELEM)
                                 let filter = radio.attr('lay-filter') //获取过滤器
                                 let sameRadio = forms.find(
-                                    'input[name=' + name.replace(/(\.|#|\[|\])/g, '\\$1') + ']'
+                                    'input[name=' + name.replace(/[.#[\]]/g, '\\$1') + ']'
                                 ) //找到相同name的兄弟
 
                                 if (radio[0].disabled) return
@@ -537,6 +545,10 @@ layui.define('layer', function(exports) {
                 vers = othis.attr('lay-verify').split('|'),
                 verType = othis.attr('lay-verType'), //提示方式
                 value = othis.val()
+
+            if (value === null || value === undefined) {
+                value = ''
+            }
 
             othis.removeClass(DANGER)
             layui.each(vers, function(_, thisVer) {
