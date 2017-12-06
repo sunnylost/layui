@@ -334,6 +334,13 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             )
         }
 
+        let arr = (that.resizedColumn = [])
+        layui.each(options.cols[0], (i, v) => {
+            if (!v.unresize) {
+                arr.push(v)
+            }
+        })
+
         //请求数据
         that.pullData(that.page)
         that.events()
@@ -548,7 +555,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         let eachArrs = function(obj) {
             layui.each(obj || arrs, function(i, item) {
                 if (item.CHILD_COLS) return eachArrs(item.CHILD_COLS)
-                callback(i, item)
+                return callback(i, item)
             })
         }
 
@@ -1074,7 +1081,25 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             ELEM_CELL = '.layui-table-cell',
             filter = options.elem.attr('lay-filter')
 
+        let timeoutID = 0
+
         options.filter = filter
+
+        function setFieldWidth(field, width) {
+            clearTimeout(timeoutID)
+
+            setTimeout(() => {
+                /**
+                 * TODO: 目前不考虑嵌套表头
+                 */
+                layui.each(that.config.cols[0], (i, v) => {
+                    if (v.field === field) {
+                        v.width = width
+                        return true
+                    }
+                })
+            }, 10)
+        }
 
         //拖拽调整宽度
         th
@@ -1099,6 +1124,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     e.preventDefault()
                     dict.resizeStart = true //开始拖拽
                     dict.offset = [e.clientX, e.clientY] //记录初始坐标
+                    dict.field = field
 
                     that.getCssRule(field, function(item) {
                         let width = item.style.width || othis.outerWidth()
@@ -1118,6 +1144,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                         if (setWidth < dict.minWidth) setWidth = dict.minWidth
                         dict.rule.style.width = setWidth + 'px'
                         layer.close(that.tipsIndex)
+                        setFieldWidth(dict.field, setWidth)
                     }
                     resizing = 1
                 }
@@ -1455,8 +1482,62 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         _WIN.on('resize', function() {
             //自适应
             that.fullSize()
-            that.scrollPatch()
+            !that.config.disableAutoColumn && that.resizeColumn()
         })
+    }
+
+    Table.prototype.resizeColumn = function() {
+        let cellMinWidth = this.config.cellMinWidth,
+            cols = this.resizedColumn,
+            colsNum = cols.length,
+            layMainTable = this.layMain.children('table'),
+            oldWidth = this.layMain.width(),
+            offset = layMainTable.outerWidth() - oldWidth //表格内容器的超出宽度
+
+        if (offset === 0) {
+            return
+        }
+
+        /**
+         * 宽度增加，均匀分配给列
+         */
+        if (offset < 0) {
+            offset = Math.abs(offset)
+            let extra = parseInt(offset / colsNum)
+
+            layui.each(cols, (i, v) => {
+                if (i === colsNum - 1) {
+                    v.width += offset - extra * (colsNum - 1)
+                } else {
+                    v.width += extra
+                }
+            })
+        } else {
+            let extra = parseInt(offset / colsNum)
+
+            layui.each(cols, (i, v) => {
+                let result
+
+                if (i === colsNum - 1) {
+                    result = v.width - offset
+                } else {
+                    result = v.width - extra
+                }
+
+                if (result < v.minWidth || result < cellMinWidth) {
+                    return
+                }
+
+                v.width = result
+                offset -= extra
+            })
+        }
+
+        for (let i = 0; i < colsNum; i++) {
+            this.getCssRule(cols[i].field, item => {
+                item.style.width = cols[i].width + 'px'
+            })
+        }
     }
 
     Table.prototype.deleteRow = function(index) {
