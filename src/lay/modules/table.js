@@ -1301,11 +1301,19 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 let othis = $(this),
                     index = othis.index()
                 that.layBody.find('tr:eq(' + index + ')').addClass(ELEM_HOVER)
+                layui.event.call(this, MOD_NAME, 'mouseenter(' + that.key + ')', {
+                    index,
+                    data: table.cache[that.key][index]
+                })
             })
             .on('mouseleave', 'tr', function() {
                 let othis = $(this),
                     index = othis.index()
                 that.layBody.find('tr:eq(' + index + ')').removeClass(ELEM_HOVER)
+                layui.event.call(this, MOD_NAME, 'mouseleave(' + that.key + ')', {
+                    index,
+                    data: table.cache[that.key][index]
+                })
             })
 
         //单元格编辑

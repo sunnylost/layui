@@ -230,6 +230,10 @@ table.render({
   table.on('checkbox(test)', function(obj){
     console.log(obj)
   });
+
+  table.on('mouseenter(test)',function (obj) {
+      console.log(obj)
+  })
   
   //监听单元格编辑
   table.on('edit(test)', function(obj){
