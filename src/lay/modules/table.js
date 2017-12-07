@@ -84,6 +84,9 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             let generateCell = `<div class="layui-table-cell laytable-cell-{{# if(item2.colspan > 1){ }}group{{# } else { }}{{d.index}}-{{item2.field || i2}}{{# if(item2.type !== "normal"){ }} laytable-cell-{{ item2.type }}{{# } }}{{# } }}" {{#if(item2.align){}}align="{{item2.align}}"{{#}}}>
     {{# if(item2.type === "checkbox"){ }}
     <input type="checkbox" name="layTableCheckbox" lay-skin="primary" lay-filter="layTableAllChoose" {{# if(item2[d.data.checkName]){ }}checked{{# }; }}>
+    {{# if(item2.title) { }}
+    <span class="layui-table-header-text">{{ item2.title }}</span>
+    {{# } }}
     {{# } else { }}
     <span>{{item2.title||""}}</span>
         {{# if(!(item2.colspan > 1) && item2.sort){ }}
@@ -924,7 +927,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         thisData[index][options.checkName] = checked
     }
 
-    //同步全选按钮状态
+    /**
+     * 同步全选按钮状态
+     * 可能会有多列存在 checkbox
+     */
     Table.prototype.syncCheckAll = function() {
         let that = this,
             options = that.config,

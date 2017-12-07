@@ -499,7 +499,7 @@ layui.define('layer', function(exports) {
                                 '<i class="layui-anim layui-icon">' +
                                     ICON[radio.checked ? 0 : 1] +
                                     '</i>',
-                                '<span>' + (radio.title || '未命名') + '</span>',
+                                '<span>' + (radio.title || '') + '</span>',
                                 '</div>'
                             ].join('')
                         )
