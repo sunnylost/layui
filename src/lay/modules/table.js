@@ -386,7 +386,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                         let width, isNone
                         parent = parent || options.elem.parent()
                         width = parent.width()
-                        isNone = parent.css('display') === 'none'
+                        try {
+                            isNone = parent.css('display') === 'none'
+                            /* eslint-disable */
+                        } catch (e) {}
+                        /* eslint-enable */
                         if (parent[0] && (!width || isNone)) return getWidth(parent.parent())
                         return width
                     }
@@ -458,9 +462,14 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //表格重载
     Table.prototype.reload = function(options) {
-        let that = this
-        that.config = $.extend({}, that.config, options)
-        that.render()
+        let config = this.config
+
+        if (config.data && config.data.constructor === Array) {
+            delete config.data
+        }
+
+        this.config = $.extend({}, config, options)
+        this.render()
     }
 
     //页码
@@ -522,7 +531,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             setProp(res, response.dataName, options.data.concat().splice(startLimit, options.limit))
             setProp(res, response.countName, options.data.length)
 
-            that.renderData(res, curr, options.data.length), sort()
+            that.renderData(res, curr, options.data.length)
+            sort()
             typeof options.done === 'function' &&
                 options.done(res, curr, getProp(res, response.countName))
         }
@@ -911,6 +921,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     that.elem.offset().top + that.elem.height() / 2 - 35 - _WIN.scrollTop() + 'px',
                     that.elem.offset().left + that.elem.width() / 2 - 90 - _WIN.scrollLeft() + 'px'
                 ],
+                time: -1,
                 anim: -1,
                 fixed: false
             })
@@ -969,7 +980,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             rules = sheet.cssRules || sheet.rules
         layui.each(rules, function(i, item) {
             if (item.selectorText === '.laytable-cell-' + that.index + '-' + field) {
-                return callback(item), true
+                callback(item)
+                return true
             }
         })
     }
@@ -1706,6 +1718,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         setTimeout(function() {
             layui.event.call(this, MOD_NAME, 'reload(' + id + ')')
         }, 4)
+
+        if (options.data && options.data.constructor === Array) {
+            delete config.data
+        }
 
         return table.render($.extend(true, {}, config, options))
     }
