@@ -13,7 +13,9 @@
     <link rel="stylesheet" href="../src/css/layui.css">
 
     <style>
-        body{padding: 10px;}
+        body {
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -38,6 +40,21 @@
         </div>
     </div>
     <div class="layui-form-item">
+        <label class="layui-form-label">输入框</label>
+        <div class="layui-input-block">
+            <input type="text" name="bbb[]" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">输入框</label>
+        <div class="layui-input-block">
+            <input type="text" name="bbb[]" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <input type="checkbox" name="like1[]" lay-skin="primary" title="写作">
+    <input type="checkbox" name="like1[]" lay-skin="primary" title="写作">
+    <input type="checkbox" name="like1[]" lay-skin="primary" title="写作">
+    <div class="layui-form-item">
         <div class="layui-input-block">
             <button class="layui-btn" lay-submit lay-filter="*">立即提交</button>
             <button type="reset" class="layui-btn layui-btn-primary">重置</button>
@@ -49,25 +66,29 @@
     <div class="layui-form-item">
         <label class="layui-form-label">输入框</label>
         <div class="layui-input-block">
-            <input type="text" name="title" lay-verify="required|title" required placeholder="请输入标题" autocomplete="off" class="layui-input">
+            <input type="text" name="title" lay-verify="required|title" required placeholder="请输入标题" autocomplete="off"
+                   class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">手机</label>
         <div class="layui-input-block">
-            <input type="tel" name="phone" lay-verify="required|number" lay-verType="tips" autocomplete="off" class="layui-input">
+            <input type="tel" name="phone" lay-verify="required|number" lay-verType="tips" autocomplete="off"
+                   class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">邮箱</label>
         <div class="layui-input-block">
-            <input type="email" name="email" lay-verify="email"  lay-verType="alert" autocomplete="off" class="layui-input">
+            <input type="email" name="email" lay-verify="email" lay-verType="alert" autocomplete="off"
+                   class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">密码</label>
         <div class="layui-input-inline">
-            <input type="password" name="password" lay-verify="required|pass" placeholder="请输入密码" autocomplete="off" class="layui-input">
+            <input type="password" name="password" lay-verify="required|pass" placeholder="请输入密码" autocomplete="off"
+                   class="layui-input">
         </div>
         <div class="layui-form-mid layui-word-aux">请务必填写用户名</div>
     </div>
@@ -158,7 +179,7 @@
     <div class="layui-form-item" pane>
         <label class="layui-form-label">开关关</label>
         <div class="layui-input-block">
-            <input type="checkbox" name="close" lay-skin="switch" title="开关"  disabled>
+            <input type="checkbox" name="close" lay-skin="switch" title="开关" disabled>
         </div>
     </div>
     <div class="layui-form-item" pane>
@@ -204,47 +225,47 @@
 <!-- <script src="../build/lay/dest/layui.all.js"></script> -->
 
 <script>
-    layui.use('form', function(){
-        var form = layui.form;
+    layui.use('form', function () {
+        var form = layui.form
 
         //自定义验证规则
         form.verify({
-            title: function(value){
-                if(value.length < 5){
-                    return '标题也太短了吧';
+            title : function (value) {
+                if (value.length < 5) {
+                    return '标题也太短了吧'
                 }
             }
-            ,pass: [/(.+){6,12}$/, '密码必须6到12位']
-        });
-
-        //事件监听
-        form.on('select', function(data){
-            console.log(this);
+            , pass: [/(.+){6,12}$/, '密码必须6到12位']
         })
 
-        form.on('select(aihao)', function(data){
-            console.log(data);
-        });
+        //事件监听
+        form.on('select', function (data) {
+            console.log(this)
+        })
 
-        form.on('checkbox', function(data){
-            console.log(this.checked, data.elem.checked);
-        });
+        form.on('select(aihao)', function (data) {
+            console.log(data)
+        })
 
-        form.on('switch', function(data){
-            console.log(data);
-        });
+        form.on('checkbox', function (data) {
+            console.log(this.checked, data.elem.checked)
+        })
 
-        form.on('radio', function(data){
-            console.log(data);
-        });
+        form.on('switch', function (data) {
+            console.log(data)
+        })
+
+        form.on('radio', function (data) {
+            console.log(data)
+        })
 
         //监听提交
-        form.on('submit(*)', function(data){
+        form.on('submit(*)', function (data) {
             console.log(data)
-            return false;
-        });
+            return false
+        })
 
-    });
+    })
 </script>
 
 
@@ -262,18 +283,18 @@
     <button>Go</button>
 </form>
 <script>
-    layui.use('jquery', function(){
-        var $ = layui.jquery;
-        var submit = function(){
-            return false;
-        };
-        $('#test').on('submit', function(){
+    layui.use('jquery', function () {
+        var $ = layui.jquery
+        var submit = function () {
             return false
-        });
-        $('#test').on('submit', function(){
+        }
+        $('#test').on('submit', function () {
+            return false
+        })
+        $('#test').on('submit', function () {
             return true
-        });
-    });
+        })
+    })
 </script>
 </body>
 </html>

@@ -1719,7 +1719,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             layui.event.call(this, MOD_NAME, 'reload(' + id + ')')
         }, 4)
 
-        if (options.data && options.data.constructor === Array) {
+        if (options && options.data && options.data.constructor === Array) {
             delete config.data
         }
 
