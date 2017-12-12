@@ -274,7 +274,7 @@ layui.define('layer', function(exports) {
                         let othis = $(this),
                             hasRender = othis.next('.' + CLASS),
                             disabled = this.disabled,
-                            value = select.value || othis.data('value'),
+                            value = othis.data('value') || select.value,
                             hasDefaultVal = typeof value !== 'undefined',
                             selected = $(select.options[select.selectedIndex]), //获取当前选中项
                             optionsFirst = select.options[0]
