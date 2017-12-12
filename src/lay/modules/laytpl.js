@@ -105,10 +105,10 @@ layui.define(function(exports) {
     }
 
     Tpl.pt.render = function(data, callback) {
-        let that = this,
-            tpl
-        if (!data) return tool.error('no data')
-        tpl = that.cache ? that.cache(data, tool.escape) : that.parse(that.tpl, data)
+        let tpl
+
+        data = data || {}
+        tpl = this.cache ? this.cache(data, tool.escape) : this.parse(this.tpl, data)
         if (!callback) return tpl
         callback(tpl)
     }
