@@ -274,11 +274,16 @@ layui.define('layer', function(exports) {
                         let othis = $(this),
                             hasRender = othis.next('.' + CLASS),
                             disabled = this.disabled,
-                            value = select.value,
+                            value = select.value || othis.data('value'),
+                            hasDefaultVal = typeof value !== 'undefined',
                             selected = $(select.options[select.selectedIndex]), //获取当前选中项
                             optionsFirst = select.options[0]
 
                         if (typeof othis.attr('lay-ignore') === 'string') return othis.show()
+
+                        if (hasDefaultVal) {
+                            selected = othis.find('option[value="' + value + '"]')
+                        }
 
                         let isSearch = typeof othis.attr('lay-search') === 'string',
                             placeholder = optionsFirst
