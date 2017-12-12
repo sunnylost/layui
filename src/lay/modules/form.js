@@ -535,7 +535,7 @@ layui.define('layer', function(exports) {
             field = {},
             elem = button.parents(ELEM),
             verifyElem = elem.find('*[lay-verify]'), //获取需要校验的元素
-            formElem = button.parents('form')[0], //获取当前所在的form元素，如果存在的话
+            formElem = button.parents('.layui-form')[0], //获取当前所在的form元素，如果存在的话
             fieldElem = elem.find('input,select,textarea'), //获取所有表单域
             filter = button.attr('lay-filter') //获取过滤器
 

@@ -247,8 +247,14 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         options.elem = $(options.elem)
         options.where = options.where || {}
         options.id = options.id || options.elem.attr('id')
-        options.checked = [] //选中
-        options.expanded = [] //展开
+
+        if (!options.checked) {
+            options.checked = [] //选中
+        }
+
+        if (!options.expanded) {
+            options.expanded = [] //展开
+        }
 
         //请求参数的自定义格式
         options.request = $.extend(
