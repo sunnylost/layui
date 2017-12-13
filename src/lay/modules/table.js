@@ -1248,12 +1248,18 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 }
             })
 
-        function updateArray(arr, val, forceAdd) {
+        /**
+         *
+         * @param arr
+         * @param val
+         * @param checked 选中还是取消
+         */
+        function updateArray(arr, val, checked) {
             let index = arr.indexOf(val)
 
-            if (index === -1) {
-                arr.push(val)
-            } else if (!forceAdd) {
+            if (checked) {
+                index === -1 && arr.push(val)
+            } else {
                 arr.splice(index, 1)
             }
         }
@@ -1288,16 +1294,15 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             }
 
             /**
-             * TODO:
              * 保存选中的数据，用于跨页显示
              */
             if (key) {
                 if (isAll) {
                     layui.each(allData, function(i, v) {
-                        updateArray(tableCheckArr, v[key], true)
+                        updateArray(tableCheckArr, v[key], checked)
                     })
                 } else {
-                    updateArray(tableCheckArr, data[key])
+                    updateArray(tableCheckArr, data[key], checked)
                 }
             }
 
