@@ -103,7 +103,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 generateFixed,
                 '<th data-field="{{ item2.field||i2 }}" {{# if(item2.minWidth){ }}data-minwidth="{{item2.minWidth}}"{{# } }} ' +
                     rowCols +
-                    ' {{# if(item2.unresize){ }}data-unresize="true"{{# } }}>',
+                    ' {{# if(item2.unresize){ }}data-unresize="true"{{# } }}',
+                ' {{# if(item2.hide){ }}class="layui-hide"{{# } }}>',
                 generateCell,
                 '</th>',
                 options.fixed ? '{{# }; }}' : '',
@@ -650,23 +651,51 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                             rowspan = 'rowspan=' + span.rowspan
                         }
 
+                        let attr = []
+
+                        if (item3.hide) {
+                            //是否允许单元格编辑
+                            attr.push('class="layui-hide"')
+                        }
+
+                        if (item3.edit) {
+                            //是否允许单元格编辑
+                            attr.push('data-edit="' + item3.edit + '"')
+                        }
+
+                        if (item3.align) {
+                            //对齐方式
+                            attr.push('align="' + item3.align + '"')
+                        }
+
+                        if (item3.templet) {
+                            //自定义模板
+                            attr.push('data-content="' + content + '"')
+                        }
+
+                        if (item3.toolbar) {
+                            //自定义模板
+                            attr.push('data-off="true"')
+                        }
+
+                        if (item3.event) {
+                            //自定义事件
+                            attr.push('lay-event="' + item3.event + '"')
+                        }
+
+                        if (item3.style) {
+                            //自定义样式
+                            attr.push('style="' + item3.style + '"')
+                        }
+
+                        if (item3.minWidth) {
+                            //单元格最小宽度
+                            attr.push('data-minwidth="' + item3.minWidth + '"')
+                        }
+
                         //td内容
                         let td = [
-                            '<td data-field="' +
-                                field +
-                                '" ' +
-                                (function() {
-                                    let attr = []
-                                    if (item3.edit) attr.push('data-edit="' + item3.edit + '"') //是否允许单元格编辑
-                                    if (item3.align) attr.push('align="' + item3.align + '"') //对齐方式
-                                    if (item3.templet) attr.push('data-content="' + content + '"') //自定义模板
-                                    if (item3.toolbar) attr.push('data-off="true"') //自定义模板
-                                    if (item3.event) attr.push('lay-event="' + item3.event + '"') //自定义事件
-                                    if (item3.style) attr.push('style="' + item3.style + '"') //自定义样式
-                                    if (item3.minWidth)
-                                        attr.push('data-minwidth="' + item3.minWidth + '"') //单元格最小宽度
-                                    return attr.join(' ')
-                                })(),
+                            '<td data-field="' + field + '" ' + attr.join(' '),
                             colspan,
                             rowspan,
                             '>',
@@ -1279,44 +1308,12 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             })
         })
 
-        /**
-         * TODO: 行展开
-         * 指定某些行自动展开
-         * 全部自动展开
-         * 展开/关闭 API
-         */
-        function toggleRow(index) {
-            let $tr = that.elem.find(`tr[data-index="${index}"]`)
-            let $el = $tr.find('.layui-table-expand')
-            let tableData = table.cache[that.key]
-            let field = 'expand'
-            let templet
-            let html
-
-            that.eachCols(function(i, item) {
-                if (item.type === field && item.templet) {
-                    templet = item.templet
-                }
-            })
-
-            html = templet ? laytpl($(templet).html() || this.value).render(tableData[index]) : ''
-
-            if ($tr.hasClass(ROW_EXPANDED)) {
-                $tr.removeClass(ROW_EXPANDED)
-                $el.html('&#xe602;') //right
-                $tr.next('tr').remove()
-            } else {
-                $tr.addClass(ROW_EXPANDED)
-                $el.html('&#xe61a') //down
-                $tr.after(`<tr><td colspan="${that.config.cols[0].length}">${html}</td></tr>`)
-            }
-        }
         that.elem.on('click', 'i[name="layTableExpand"]', function() {
             let $el = $(this)
             let $tr = $el.parents('tr[data-index]')
             let index = $tr.data('index')
 
-            toggleRow(index)
+            that.toggleRow(index)
         })
 
         //行事件
@@ -1601,6 +1598,47 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             data: arr, //选中的数据
             isAll: data.length ? nums === data.length - invalidNum : false //是否全选
         }
+    }
+
+    /**
+     * TODO: 行展开
+     * 指定某些行自动展开
+     */
+    Table.prototype.toggleRow = function(index) {
+        let id = this.key
+        let $tr = this.elem.find(`tr[data-index="${index}"]`)
+        let $el = $tr.find('.layui-table-expand')
+        let tableData = table.cache[id]
+        let field = 'expand'
+        let templet
+        let html
+        let isExpand
+
+        this.eachCols(function(i, item) {
+            if (item.type === field && item.templet) {
+                templet = item.templet
+            }
+        })
+
+        html = templet ? laytpl($(templet).html() || this.value).render(tableData[index]) : ''
+
+        if ($tr.hasClass(ROW_EXPANDED)) {
+            $tr.removeClass(ROW_EXPANDED)
+            $el.html('&#xe602;') //right
+            $tr.next('tr').remove()
+            isExpand = false
+        } else {
+            $tr.addClass(ROW_EXPANDED)
+            $el.html('&#xe61a') //down
+            $tr.after(`<tr><td colspan="${this.config.cols[0].length}">${html}</td></tr>`)
+            isExpand = true
+        }
+
+        layui.event.call(this, MOD_NAME, `expand(${id})`, {
+            index,
+            data: tableData[index],
+            isExpand
+        })
     }
 
     //初始化

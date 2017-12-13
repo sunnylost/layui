@@ -20,7 +20,7 @@
     layui.use('table', function(){
         var table = layui.table;
 
-        table.render({
+        let t = table.render({
             elem: '#demo'
             ,url: '../json/table/demo1.json'
             ,page: { //详细参数可参考 laypage 组件文档
@@ -44,6 +44,10 @@
                 ,{field:'city', title:'城市'}
             ]]
         });
+
+        table.on('expand(demo)',(data) =>{
+console.log(data)
+        })
     });
 </script>
 </body>
