@@ -8,6 +8,7 @@ layui 修改版
 ### form
 
 - 修复验证时，获取的 `value` 值为 `null` 的 bug
+- `select` 可以通过 `data-value` 来设置默认值
 
 ### table
 
@@ -19,6 +20,7 @@ layui 修改版
 - 增加 `cellSpan` 方法来实现单元格合并
 - 增加 `globalCheck` 选项来实现跨页保持选中
 - 增加列的自适应
+- 列增加 `hide` 属性
 
 ### tree
 

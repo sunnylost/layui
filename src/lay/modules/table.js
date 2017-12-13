@@ -1316,12 +1316,27 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             that.toggleRow(index)
         })
 
+        let hoverTds = []
+
         //行事件
         that.layBody
             .on('mouseenter', 'tr', function() {
                 let othis = $(this),
                     index = othis.index()
                 that.layBody.find('tr:eq(' + index + ')').addClass(ELEM_HOVER)
+                let $tds = that.layBody.find('td[rowspan]')
+
+                for (let i = 0; i < $tds.length; i++) {
+                    let $el = $tds.eq(i)
+                    let trIndex = $el.parent().data('index')
+                    let rowspan = parseInt($el.attr('rowspan')) - 1
+
+                    if (trIndex <= index && rowspan + trIndex >= index) {
+                        $el.addClass(ELEM_HOVER)
+                        hoverTds.push($el)
+                    }
+                }
+
                 layui.event.call(this, MOD_NAME, 'mouseenter(' + that.key + ')', {
                     index,
                     data: table.cache[that.key][index]
@@ -1331,6 +1346,14 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 let othis = $(this),
                     index = othis.index()
                 that.layBody.find('tr:eq(' + index + ')').removeClass(ELEM_HOVER)
+
+                if (hoverTds.length) {
+                    for (let i = 0; i < hoverTds.length; i++) {
+                        hoverTds[i].removeClass(ELEM_HOVER)
+                    }
+                    hoverTds.length = 0
+                }
+
                 layui.event.call(this, MOD_NAME, 'mouseleave(' + that.key + ')', {
                     index,
                     data: table.cache[that.key][index]
