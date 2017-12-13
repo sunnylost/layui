@@ -1248,12 +1248,12 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 }
             })
 
-        function updateArray(arr, val) {
+        function updateArray(arr, val, forceAdd) {
             let index = arr.indexOf(val)
 
             if (index === -1) {
                 arr.push(val)
-            } else {
+            } else if (!forceAdd) {
                 arr.splice(index, 1)
             }
         }
@@ -1294,7 +1294,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             if (key) {
                 if (isAll) {
                     layui.each(allData, function(i, v) {
-                        updateArray(tableCheckArr, v[key])
+                        updateArray(tableCheckArr, v[key], true)
                     })
                 } else {
                     updateArray(tableCheckArr, data[key])

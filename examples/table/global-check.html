@@ -43,8 +43,9 @@
             ]]
         }).table;
 
-        let checked = t.config.checked
-        console.log(checked)
+        table.on('checkbox(check)',() =>{
+            console.log(t.config.checked)
+        })
     });
 </script>
 </body>
