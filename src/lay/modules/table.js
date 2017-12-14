@@ -1805,7 +1805,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         let opts = inst.config,
             id = opts.id
 
-        id && (table.instances[id] = opts)
+        if (id) {
+            table.instances[id] = opts
+            opts.table = inst
+        }
 
         inst.table = inst
 
