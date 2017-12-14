@@ -652,10 +652,15 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                         }
 
                         let attr = []
+                        let classes = []
 
                         if (item3.hide) {
                             //是否允许单元格编辑
-                            attr.push('class="layui-hide"')
+                            classes.push('layui-hide')
+                        }
+
+                        if (item3.classes) {
+                            classes.push(item3.classes)
                         }
 
                         if (item3.edit) {
@@ -691,6 +696,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                         if (item3.minWidth) {
                             //单元格最小宽度
                             attr.push('data-minwidth="' + item3.minWidth + '"')
+                        }
+
+                        if (classes.length) {
+                            attr.push('class="' + classes.join(' ') + '"')
                         }
 
                         //td内容
