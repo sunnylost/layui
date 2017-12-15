@@ -1,4 +1,4 @@
-﻿/**
+/**
 
  @Name：layer v3.1.0 Web弹层组件
  @Author：贤心
@@ -15,20 +15,24 @@
         win,
         ready = {
             getPath: (function() {
-                let jsPath = document.currentScript
-                    ? document.currentScript.src
-                    : (function() {
-                        let js = document.scripts,
-                            last = js.length - 1,
-                            src
-                        for (let i = last; i > 0; i--) {
-                            if (js[i].readyState === 'interactive') {
-                                src = js[i].src
-                                break
-                            }
+                let jsPath
+
+                if (document.currentScript) {
+                    jsPath = document.currentScript.src
+                } else {
+                    let js = document.scripts,
+                        last = js.length - 1,
+                        src
+                    for (let i = last; i > 0; i--) {
+                        if (js[i].readyState === 'interactive') {
+                            src = js[i].src
+                            break
                         }
-                        return src || js[last].src
-                    })()
+                    }
+
+                    jsPath = src || js[last].src
+                }
+
                 return jsPath.substring(0, jsPath.lastIndexOf('/') + 1)
             })(),
 
@@ -161,7 +165,27 @@
                 rskin = ready.config.skin
             let skin = (rskin ? rskin + ' ' + rskin + '-msg' : '') || 'layui-layer-msg'
             let anim = doms.anim.length - 1
-            if (type) end = options
+
+            if (type) {
+                end = options
+            }
+
+            let extObj
+
+            if (type && !ready.config.skin) {
+                extObj = {
+                    skin: skin + ' layui-layer-hui',
+                    anim: anim
+                }
+            } else {
+                options = options || {}
+                if (options.icon === -1 || (options.icon === undefined && !ready.config.skin)) {
+                    options.skin = skin + ' ' + (options.skin || 'layui-layer-hui')
+                }
+
+                extObj = options
+            }
+
             return layer.open(
                 $.extend(
                     {
@@ -175,21 +199,7 @@
                         resize: false,
                         end: end
                     },
-                    type && !ready.config.skin
-                        ? {
-                            skin: skin + ' layui-layer-hui',
-                            anim: anim
-                        }
-                        : (function() {
-                            options = options || {}
-                            if (
-                                options.icon === -1 ||
-                                  (options.icon === undefined && !ready.config.skin)
-                            ) {
-                                options.skin = skin + ' ' + (options.skin || 'layui-layer-hui')
-                            }
-                            return options
-                        })()
+                    extObj
                 )
             )
         },
@@ -303,6 +313,25 @@
             : ''
 
         config.zIndex = zIndex
+
+        let btnStr = ''
+
+        if (config.btn) {
+            let button = ''
+            typeof config.btn === 'string' && (config.btn = [config.btn])
+            for (let i = 0, len = config.btn.length; i < len; i++) {
+                button += '<a class="' + doms[6] + '' + i + '">' + config.btn[i] + '</a>'
+            }
+            btnStr =
+                '<div class="' +
+                doms[6] +
+                ' layui-layer-btn-' +
+                (config.btnAlign || '') +
+                '">' +
+                button +
+                '</div>'
+        }
+
         callback(
             [
                 //遮罩
@@ -372,31 +401,7 @@
                         return closebtn
                     })() +
                     '</span>' +
-                    (config.btn
-                        ? (function() {
-                            let button = ''
-                            typeof config.btn === 'string' && (config.btn = [config.btn])
-                            for (let i = 0, len = config.btn.length; i < len; i++) {
-                                button +=
-                                      '<a class="' +
-                                      doms[6] +
-                                      '' +
-                                      i +
-                                      '">' +
-                                      config.btn[i] +
-                                      '</a>'
-                            }
-                            return (
-                                '<div class="' +
-                                  doms[6] +
-                                  ' layui-layer-btn-' +
-                                  (config.btnAlign || '') +
-                                  '">' +
-                                  button +
-                                  '</div>'
-                            )
-                        })()
-                        : '') +
+                    btnStr +
                     (config.resize ? '<span class="layui-layer-resize"></span>' : '') +
                     '</div>'
             ],
@@ -431,15 +436,15 @@
         }
 
         switch (config.type) {
-        case 0:
-            config.btn = 'btn' in config ? config.btn : ready.btn[0]
-            layer.closeAll('dialog')
-            break
-        case 2:
-            config.content = conType
-                ? config.content
-                : [config.content || 'http://layer.layui.com', 'auto']
-            config.content =
+            case 0:
+                config.btn = 'btn' in config ? config.btn : ready.btn[0]
+                layer.closeAll('dialog')
+                break
+            case 2:
+                config.content = conType
+                    ? config.content
+                    : [config.content || 'http://layer.layui.com', 'auto']
+                config.content =
                     '<iframe scrolling="' +
                     (config.content[1] || 'auto') +
                     '" allowtransparency="true" id="' +
@@ -453,46 +458,45 @@
                     '" onload="this.className=\'\';" class="layui-layer-load" frameborder="0" src="' +
                     config.content[0] +
                     '"></iframe>'
-            break
-        case 3:
-            delete config.title
-            delete config.closeBtn
-            layer.closeAll('loading')
-            break
-        case 4:
-            conType || (config.content = [config.content, 'body'])
-            config.follow = config.content[1]
-            config.content = config.content[0] + '<i class="layui-layer-TipsG"></i>'
-            delete config.title
-            config.tips = typeof config.tips === 'object' ? config.tips : [config.tips, true]
-            config.tipsMore || layer.closeAll('tips')
-            break
+                break
+            case 3:
+                delete config.title
+                delete config.closeBtn
+                layer.closeAll('loading')
+                break
+            case 4:
+                conType || (config.content = [config.content, 'body'])
+                config.follow = config.content[1]
+                config.content = config.content[0] + '<i class="layui-layer-TipsG"></i>'
+                delete config.title
+                config.tips = typeof config.tips === 'object' ? config.tips : [config.tips, true]
+                config.tipsMore || layer.closeAll('tips')
+                break
         }
 
         //建立容器
         that
             .vessel(conType, function(html, titleHTML, moveElem) {
                 body.append(html[0])
-                conType
-                    ? (function() {
-                        config.type === 2 || config.type === 4
-                            ? (function() {
-                                $('body').append(html[1])
-                            })()
-                            : (function() {
-                                if (!content.parents('.' + doms[0])[0]) {
-                                    content
-                                        .data('display', content.css('display'))
-                                        .show()
-                                        .addClass('layui-layer-wrap')
-                                        .wrap(html[1])
-                                    $('#' + doms[0] + times)
-                                        .find('.' + doms[5])
-                                        .before(titleHTML)
-                                }
-                            })()
-                    })()
-                    : body.append(html[1])
+
+                if (conType) {
+                    if (config.type === 2 || config.type === 4) {
+                        $('body').append(html[1])
+                    } else {
+                        if (!content.parents('.' + doms[0])[0]) {
+                            content
+                                .data('display', content.css('display'))
+                                .show()
+                                .addClass('layui-layer-wrap')
+                                .wrap(html[1])
+                            $('#' + doms[0] + times)
+                                .find('.' + doms[5])
+                                .before(titleHTML)
+                        }
+                    }
+                } else {
+                    body.append(html[1])
+                }
                 $('.layui-layer-move')[0] || body.append((ready.moveElem = moveElem))
                 that.layero = $('#' + doms[0] + times)
                 config.scrollbar || doms.html.css('overflow', 'hidden').attr('layer-full', times)
@@ -509,13 +513,15 @@
 
         //坐标自适应浏览器窗口尺寸
         config.type === 4 ? that.tips() : that.offset()
+
         if (config.fixed) {
-            win.on('resize', function() {
+            config._resizeHandler = function() {
                 that.offset()
                 ;(/^\d+%$/.test(config.area[0]) || /^\d+%$/.test(config.area[1])) &&
                     that.auto(times)
                 config.type === 4 && that.tips()
-            })
+            }
+            win.on('resize', config._resizeHandler)
         }
 
         config.time <= 0 ||
@@ -568,22 +574,22 @@
             }
 
         switch (config.type) {
-        case 2:
-            setHeight('iframe')
-            break
-        default:
-            if (config.area[1] === '') {
+            case 2:
+                setHeight('iframe')
+                break
+            default:
+                if (config.area[1] === '') {
                     if (config.maxHeight > 0 && layero.outerHeight() > config.maxHeight) {
                         area[1] = config.maxHeight
-                    setHeight('.' + doms[5])
-                } else if (config.fixed && area[1] >= win.height()) {
+                        setHeight('.' + doms[5])
+                    } else if (config.fixed && area[1] >= win.height()) {
                         area[1] = win.height()
-                    setHeight('.' + doms[5])
+                        setHeight('.' + doms[5])
                     }
                 } else {
-                setHeight('.' + doms[5])
+                    setHeight('.' + doms[5])
                 }
-            break
+                break
         }
 
         return that
@@ -1632,26 +1638,28 @@
     }
 
     //加载方式
-    window.layui && layui.define
-        ? (layer.ready(),
-            layui.define('jquery', function(exports) {
-                //layui加载
-                layer.path = layui.cache.dir
-                ready.run(layui.$)
+    if (window.layui && layui.define) {
+        layer.ready()
+        layui.define('jquery', function(exports) {
+            //layui加载
+            layer.path = layui.cache.dir
+            ready.run(layui.$)
 
-                //暴露模块
-                window.layer = layer
-                exports('layer', layer)
-            }))
-        : typeof define === 'function' && define.amd
-            ? define(['jquery'], function() {
+            //暴露模块
+            window.layer = layer
+            exports('layer', layer)
+        })
+    } else {
+        if (typeof define === 'function' && define.amd) {
+            define(['jquery'], function() {
                 //requirejs加载
                 ready.run(window.jQuery)
                 return layer
             })
-            : (function() {
-                //普通script标签加载
-                ready.run(window.jQuery)
-                layer.ready()
-            })()
+        } else {
+            //普通script标签加载
+            ready.run(window.jQuery)
+            layer.ready()
+        }
+    }
 })(window)
