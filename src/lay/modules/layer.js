@@ -12,7 +12,8 @@
 
     let isLayui = window.layui && layui.define,
         $,
-        win,
+        $win,
+        _DOC,
         ready = {
             getPath: (function() {
                 let jsPath
@@ -85,6 +86,8 @@
                 })()
             }
         }
+
+    let globalCache = {}
 
     //默认内置方法。
     let layer = {
@@ -421,6 +424,9 @@
 
         if (config.id && $('#' + config.id)[0]) return
 
+        let cache = (globalCache[times] = {})
+        cache.config = config
+
         if (typeof config.area === 'string') {
             config.area = config.area === 'auto' ? ['', ''] : [config.area, '']
         }
@@ -496,7 +502,7 @@
                 body.append(html[1])
             }
             $('.layui-layer-move')[0] || body.append((ready.moveElem = moveElem))
-            that.layero = $('#' + doms[0] + times)
+            cache.layero = that.layero = $('#' + doms[0] + times)
             config.scrollbar || doms.html.css('overflow', 'hidden').attr('layer-full', times)
         }).auto(times)
 
@@ -512,14 +518,14 @@
         config.type === 4 ? that.tips() : that.offset()
 
         if (config.fixed) {
-            config._resizeHandler = () => {
+            cache.resize = () => {
                 this.offset()
                 if (/^\d+%$/.test(config.area[0]) || /^\d+%$/.test(config.area[1])) {
                     this.auto(times)
                 }
                 config.type === 4 && this.tips()
             }
-            win.on('resize', config._resizeHandler)
+            $win.on('resize', cache.resize)
         }
 
         config.time <= 0 ||
@@ -580,8 +586,8 @@
                     if (config.maxHeight > 0 && layero.outerHeight() > config.maxHeight) {
                         area[1] = config.maxHeight
                         setHeight('.' + doms[5])
-                    } else if (config.fixed && area[1] >= win.height()) {
-                        area[1] = win.height()
+                    } else if (config.fixed && area[1] >= $win.height()) {
+                        area[1] = $win.height()
                         setHeight('.' + doms[5])
                     }
                 } else {
@@ -600,8 +606,8 @@
             layero = that.layero
         let area = [layero.outerWidth(), layero.outerHeight()]
         let type = typeof config.offset === 'object'
-        that.offsetTop = (win.height() - area[1]) / 2
-        that.offsetLeft = (win.width() - area[0]) / 2
+        that.offsetTop = ($win.height() - area[1]) / 2
+        that.offsetLeft = ($win.width() - area[0]) / 2
 
         if (type) {
             that.offsetTop = config.offset[0]
@@ -612,10 +618,10 @@
                 that.offsetTop = 0
             } else if (config.offset === 'r') {
                 //右
-                that.offsetLeft = win.width() - area[0]
+                that.offsetLeft = $win.width() - area[0]
             } else if (config.offset === 'b') {
                 //下
-                that.offsetTop = win.height() - area[1]
+                that.offsetTop = $win.height() - area[1]
             } else if (config.offset === 'l') {
                 //左
                 that.offsetLeft = 0
@@ -625,16 +631,16 @@
                 that.offsetLeft = 0
             } else if (config.offset === 'lb') {
                 //左下角
-                that.offsetTop = win.height() - area[1]
+                that.offsetTop = $win.height() - area[1]
                 that.offsetLeft = 0
             } else if (config.offset === 'rt') {
                 //右上角
                 that.offsetTop = 0
-                that.offsetLeft = win.width() - area[0]
+                that.offsetLeft = $win.width() - area[0]
             } else if (config.offset === 'rb') {
                 //右下角
-                that.offsetTop = win.height() - area[1]
-                that.offsetLeft = win.width() - area[0]
+                that.offsetTop = $win.height() - area[1]
+                that.offsetLeft = $win.width() - area[0]
             } else {
                 that.offsetTop = config.offset
             }
@@ -642,17 +648,17 @@
 
         if (!config.fixed) {
             that.offsetTop = /%$/.test(that.offsetTop)
-                ? win.height() * parseFloat(that.offsetTop) / 100
+                ? $win.height() * parseFloat(that.offsetTop) / 100
                 : parseFloat(that.offsetTop)
             that.offsetLeft = /%$/.test(that.offsetLeft)
-                ? win.width() * parseFloat(that.offsetLeft) / 100
+                ? $win.width() * parseFloat(that.offsetLeft) / 100
                 : parseFloat(that.offsetLeft)
-            that.offsetTop += win.scrollTop()
-            that.offsetLeft += win.scrollLeft()
+            that.offsetTop += $win.scrollTop()
+            that.offsetLeft += $win.scrollLeft()
         }
 
         if (layero.attr('minLeft')) {
-            that.offsetTop = win.height() - (layero.find(doms[1]).outerHeight() || 0)
+            that.offsetTop = $win.height() - (layero.find(doms[1]).outerHeight() || 0)
             that.offsetLeft = layero.css('left')
         }
 
@@ -679,7 +685,7 @@
         config.tips[1] || tipsG.remove()
 
         goal.autoLeft = function() {
-            if (goal.left + layArea[0] - win.width() > 0) {
+            if (goal.left + layArea[0] - $win.width() > 0) {
                 goal.tipLeft = goal.left + goal.width - layArea[0]
                 tipsG.css({ right: 12, left: 'auto' })
             } else {
@@ -730,11 +736,11 @@
 
         /* 8*2为小三角形占据的空间 */
         if (guide === 1) {
-            goal.top - (win.scrollTop() + layArea[1] + 8 * 2) < 0 && goal.where[2]()
+            goal.top - ($win.scrollTop() + layArea[1] + 8 * 2) < 0 && goal.where[2]()
         } else if (guide === 2) {
-            win.width() - (goal.left + goal.width + layArea[0] + 8 * 2) > 0 || goal.where[3]()
+            $win.width() - (goal.left + goal.width + layArea[0] + 8 * 2) > 0 || goal.where[3]()
         } else if (guide === 3) {
-            goal.top - win.scrollTop() + goal.height + layArea[1] + 8 * 2 - win.height() > 0 &&
+            goal.top - $win.scrollTop() + goal.height + layArea[1] + 8 * 2 - $win.height() > 0 &&
                 goal.where[0]()
         } else if (guide === 4) {
             layArea[0] + 8 * 2 - goal.left > 0 && goal.where[1]()
@@ -745,8 +751,8 @@
             'padding-right': config.closeBtn ? '30px' : ''
         })
         layero.css({
-            left: goal.tipLeft - (config.fixed ? win.scrollLeft() : 0),
-            top: goal.tipTop - (config.fixed ? win.scrollTop() : 0)
+            left: goal.tipLeft - (config.fixed ? $win.scrollLeft() : 0),
+            top: goal.tipTop - (config.fixed ? $win.scrollTop() : 0)
         })
     }
 
@@ -754,11 +760,11 @@
     Layer.pt.move = function() {
         let that = this,
             config = that.config,
-            _DOC = $(document),
             layero = that.layero,
             moveElem = layero.find(config.move),
             resizeElem = layero.find('.layui-layer-resize'),
-            dict = {}
+            dict = {},
+            cache = globalCache[that.index]
 
         if (config.move) {
             moveElem.css('cursor', 'move')
@@ -784,61 +790,62 @@
             ready.moveElem.css('cursor', 'se-resize').show()
         })
 
-        _DOC
-            .on('mousemove', function(e) {
-                //拖拽移动
-                if (dict.moveStart) {
-                    let X = e.clientX - dict.offset[0],
-                        Y = e.clientY - dict.offset[1],
-                        fixed = layero.css('position') === 'fixed'
+        cache.docMousemove = function(e) {
+            //拖拽移动
+            if (dict.moveStart) {
+                let X = e.clientX - dict.offset[0],
+                    Y = e.clientY - dict.offset[1],
+                    fixed = layero.css('position') === 'fixed'
 
-                    e.preventDefault()
+                e.preventDefault()
 
-                    dict.stX = fixed ? 0 : win.scrollLeft()
-                    dict.stY = fixed ? 0 : win.scrollTop()
+                dict.stX = fixed ? 0 : $win.scrollLeft()
+                dict.stY = fixed ? 0 : $win.scrollTop()
 
-                    //控制元素不被拖出窗口外
-                    if (!config.moveOut) {
-                        let setRig = win.width() - layero.outerWidth() + dict.stX,
-                            setBot = win.height() - layero.outerHeight() + dict.stY
-                        X < dict.stX && (X = dict.stX)
-                        X > setRig && (X = setRig)
-                        Y < dict.stY && (Y = dict.stY)
-                        Y > setBot && (Y = setBot)
-                    }
-
-                    layero.css({
-                        left: X,
-                        top: Y
-                    })
+                //控制元素不被拖出窗口外
+                if (!config.moveOut) {
+                    let setRig = $win.width() - layero.outerWidth() + dict.stX,
+                        setBot = $win.height() - layero.outerHeight() + dict.stY
+                    X < dict.stX && (X = dict.stX)
+                    X > setRig && (X = setRig)
+                    Y < dict.stY && (Y = dict.stY)
+                    Y > setBot && (Y = setBot)
                 }
 
-                //Resize
-                if (config.resize && dict.resizeStart) {
-                    let X = e.clientX - dict.offset[0],
-                        Y = e.clientY - dict.offset[1]
+                layero.css({
+                    left: X,
+                    top: Y
+                })
+            }
 
-                    e.preventDefault()
+            //Resize
+            if (config.resize && dict.resizeStart) {
+                let X = e.clientX - dict.offset[0],
+                    Y = e.clientY - dict.offset[1]
 
-                    layer.style(that.index, {
-                        width: dict.area[0] + X,
-                        height: dict.area[1] + Y
-                    })
-                    dict.isResize = true
-                    config.resizing && config.resizing(layero)
-                }
-            })
-            .on('mouseup', function() {
-                if (dict.moveStart) {
-                    delete dict.moveStart
-                    ready.moveElem.hide()
-                    config.moveEnd && config.moveEnd(layero)
-                }
-                if (dict.resizeStart) {
-                    delete dict.resizeStart
-                    ready.moveElem.hide()
-                }
-            })
+                e.preventDefault()
+
+                layer.style(that.index, {
+                    width: dict.area[0] + X,
+                    height: dict.area[1] + Y
+                })
+                dict.isResize = true
+                config.resizing && config.resizing(layero)
+            }
+        }
+        cache.docMouseup = function() {
+            if (dict.moveStart) {
+                delete dict.moveStart
+                ready.moveElem.hide()
+                config.moveEnd && config.moveEnd(layero)
+            }
+            if (dict.resizeStart) {
+                delete dict.resizeStart
+                ready.moveElem.hide()
+            }
+        }
+
+        _DOC.on('mousemove', cache.docMousemove).on('mouseup', cache.docMouseup)
 
         return that
     }
@@ -1083,7 +1090,7 @@
                 width: 180,
                 height: titHeight,
                 left: left,
-                top: win.height() - titHeight,
+                top: $win.height() - titHeight,
                 position: 'fixed',
                 overflow: 'hidden'
             },
@@ -1134,10 +1141,10 @@
             layer.style(
                 index,
                 {
-                    top: isfix ? 0 : win.scrollTop(),
-                    left: isfix ? 0 : win.scrollLeft(),
-                    width: win.width(),
-                    height: win.height()
+                    top: isfix ? 0 : $win.scrollTop(),
+                    left: isfix ? 0 : $win.scrollLeft(),
+                    width: $win.width(),
+                    height: $win.height()
                 },
                 true
             )
@@ -1151,12 +1158,55 @@
         title.html(name)
     }
 
+    function clearCache(index) {
+        /**
+         * 清除事件
+         * @type {string}
+         */
+        let cache = globalCache[index]
+        let layero = cache.layero
+        let config = cache.config
+
+        if (cache.resize) {
+            $win.off('resize', cache.resize)
+        }
+
+        layero
+            .off('mousedown')
+            .find('.' + doms[6])
+            .children('a')
+            .off('click')
+
+        layero.find('.layui-layer-resize').off('mousedown')
+        layero.find(config.move).off('mousedown')
+        layero
+            .find('.layui-layer-title')
+            .children()
+            .off('mousedown')
+
+        //右上角关闭回调
+        layero.find('.' + doms[7]).off('click')
+        //点遮罩关闭
+        $('#layui-layer-shade' + index).off('click')
+        //最小化
+        layero.find('.layui-layer-min').off('click')
+        //全屏/还原
+        layero.find('.layui-layer-max').off('click')
+
+        _DOC.off('mousemove', cache.docMousemove).off('mouseup', cache.docMouseup)
+
+        globalCache[index] = cache = null
+    }
+
     //关闭layer总方法
     layer.close = function(index) {
         let layero = $('#' + doms[0] + index),
             type = layero.attr('type'),
             closeAnim = 'layer-anim-close'
         if (!layero[0]) return
+
+        clearCache(index)
+
         let WRAP = 'layui-layer-wrap',
             remove = function() {
                 if (type === ready.type[1] && layero.attr('conType') === 'object') {
@@ -1267,7 +1317,7 @@
                     btn: ['&#x786E;&#x5B9A;', '&#x53D6;&#x6D88;'],
                     content: content,
                     skin: 'layui-layer-prompt' + skin('prompt'),
-                    maxWidth: win.width(),
+                    maxWidth: $win.width(),
                     success: function(layero) {
                         prompt = layero.find('.layui-layer-input')
                         prompt.focus()
@@ -1350,7 +1400,7 @@
                     success: function(layero) {
                         let btn = layero.find('.layui-layer-title').children()
                         let main = layero.find('.layui-layer-tabmain').children()
-                        btn.on('mousedown', function(e) {
+                        btn.off('mousedown').on('mousedown', function(e) {
                             e.stopPropagation ? e.stopPropagation() : (e.cancelBubble = true)
                             let othis = $(this),
                                 index = othis.index()
@@ -1535,7 +1585,7 @@
                             id: 'layui-layer-photos',
                             area: (function() {
                                 let imgarea = [img.width, img.height]
-                                let winarea = [$(window).width() - 100, $(window).height() - 100]
+                                let winarea = [$win.width() - 100, $win.height() - 100]
 
                                 //如果 实际图片的宽或者高比 屏幕大（那么进行缩放）
                                 if (
@@ -1627,7 +1677,8 @@
     //主入口
     ready.run = function(_$) {
         $ = _$
-        win = $(window)
+        $win = $(window)
+        _DOC = $(document)
         doms.html = $('html')
         layer.open = function(deliver) {
             let o = new Layer(deliver)
