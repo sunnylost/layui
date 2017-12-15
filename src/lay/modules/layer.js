@@ -237,21 +237,20 @@
         }
     }
 
-    let Class = function(setings) {
-        let that = this
-        that.index = ++layer.index
-        that.config = $.extend({}, that.config, ready.config, setings)
+    let Layer = function(setings) {
+        this.index = ++layer.index
+        this.config = $.extend({}, this.config, ready.config, setings)
 
         if (document.body) {
-            that.creat()
+            this.create()
         } else {
-            setTimeout(function() {
-                that.creat()
+            setTimeout(() => {
+                this.create()
             }, 30)
         }
     }
 
-    Class.pt = Class.prototype
+    Layer.pt = Layer.prototype
 
     //缓存常用字符
     let doms = [
@@ -275,7 +274,7 @@
     ]
 
     //默认配置
-    Class.pt.config = {
+    Layer.pt.config = {
         type: 0,
         shade: 0.3,
         fixed: true,
@@ -297,7 +296,7 @@
     }
 
     //容器
-    Class.pt.vessel = function(conType, callback) {
+    Layer.pt.vessel = function(conType, callback) {
         let that = this,
             times = that.index,
             config = that.config
@@ -412,10 +411,10 @@
     }
 
     //创建骨架
-    Class.pt.creat = function() {
+    Layer.pt.create = function() {
         let that = this,
-            config = that.config,
-            times = that.index,
+            config = this.config,
+            times = this.index,
             content = config.content,
             conType = typeof content === 'object',
             body = $('body')
@@ -475,33 +474,31 @@
         }
 
         //建立容器
-        that
-            .vessel(conType, function(html, titleHTML, moveElem) {
-                body.append(html[0])
+        this.vessel(conType, function(html, titleHTML, moveElem) {
+            body.append(html[0])
 
-                if (conType) {
-                    if (config.type === 2 || config.type === 4) {
-                        $('body').append(html[1])
-                    } else {
-                        if (!content.parents('.' + doms[0])[0]) {
-                            content
-                                .data('display', content.css('display'))
-                                .show()
-                                .addClass('layui-layer-wrap')
-                                .wrap(html[1])
-                            $('#' + doms[0] + times)
-                                .find('.' + doms[5])
-                                .before(titleHTML)
-                        }
-                    }
+            if (conType) {
+                if (config.type === 2 || config.type === 4) {
+                    $('body').append(html[1])
                 } else {
-                    body.append(html[1])
+                    if (!content.parents('.' + doms[0])[0]) {
+                        content
+                            .data('display', content.css('display'))
+                            .show()
+                            .addClass('layui-layer-wrap')
+                            .wrap(html[1])
+                        $('#' + doms[0] + times)
+                            .find('.' + doms[5])
+                            .before(titleHTML)
+                    }
                 }
-                $('.layui-layer-move')[0] || body.append((ready.moveElem = moveElem))
-                that.layero = $('#' + doms[0] + times)
-                config.scrollbar || doms.html.css('overflow', 'hidden').attr('layer-full', times)
-            })
-            .auto(times)
+            } else {
+                body.append(html[1])
+            }
+            $('.layui-layer-move')[0] || body.append((ready.moveElem = moveElem))
+            that.layero = $('#' + doms[0] + times)
+            config.scrollbar || doms.html.css('overflow', 'hidden').attr('layer-full', times)
+        }).auto(times)
 
         //遮罩
         $('#layui-layer-shade' + that.index).css({
@@ -515,25 +512,26 @@
         config.type === 4 ? that.tips() : that.offset()
 
         if (config.fixed) {
-            config._resizeHandler = function() {
-                that.offset()
-                ;(/^\d+%$/.test(config.area[0]) || /^\d+%$/.test(config.area[1])) &&
-                    that.auto(times)
-                config.type === 4 && that.tips()
+            config._resizeHandler = () => {
+                this.offset()
+                if (/^\d+%$/.test(config.area[0]) || /^\d+%$/.test(config.area[1])) {
+                    this.auto(times)
+                }
+                config.type === 4 && this.tips()
             }
             win.on('resize', config._resizeHandler)
         }
 
         config.time <= 0 ||
-            setTimeout(function() {
-                layer.close(that.index)
+            setTimeout(() => {
+                layer.close(this.index)
             }, config.time)
-        that.move().callback()
+        this.move().callback()
 
         //为兼容jQuery3.0的css动画影响元素尺寸计算
         if (doms.anim[config.anim]) {
             let animClass = 'layer-anim ' + doms.anim[config.anim]
-            that.layero
+            this.layero
                 .addClass(animClass)
                 .one(
                     'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend',
@@ -545,12 +543,12 @@
 
         //记录关闭动画
         if (config.isOutAnim) {
-            that.layero.data('isOutAnim', true)
+            this.layero.data('isOutAnim', true)
         }
     }
 
     //自适应
-    Class.pt.auto = function(index) {
+    Layer.pt.auto = function(index) {
         let that = this,
             config = that.config,
             layero = $('#' + doms[0] + index)
@@ -596,7 +594,7 @@
     }
 
     //计算坐标
-    Class.pt.offset = function() {
+    Layer.pt.offset = function() {
         let that = this,
             config = that.config,
             layero = that.layero
@@ -662,7 +660,7 @@
     }
 
     //Tips
-    Class.pt.tips = function() {
+    Layer.pt.tips = function() {
         let that = this,
             config = that.config,
             layero = that.layero
@@ -753,7 +751,7 @@
     }
 
     //拖拽层
-    Class.pt.move = function() {
+    Layer.pt.move = function() {
         let that = this,
             config = that.config,
             _DOC = $(document),
@@ -845,7 +843,7 @@
         return that
     }
 
-    Class.pt.callback = function() {
+    Layer.pt.callback = function() {
         let that = this,
             layero = that.layero,
             config = that.config
@@ -934,7 +932,7 @@
         })
     }
 
-    Class.pt.IE6 = function() {
+    Layer.pt.IE6 = function() {
         //隐藏select
         $('select').each(function() {
             let sthis = $(this)
@@ -946,7 +944,7 @@
     }
 
     //需依赖原型的对外方法
-    Class.pt.openLayer = function() {
+    Layer.pt.openLayer = function() {
         let that = this
 
         //置顶当前窗口
@@ -1632,7 +1630,7 @@
         win = $(window)
         doms.html = $('html')
         layer.open = function(deliver) {
-            let o = new Class(deliver)
+            let o = new Layer(deliver)
             return o.index
         }
     }
