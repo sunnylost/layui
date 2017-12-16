@@ -1847,6 +1847,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             let v = handlers[i]
             v.target.off(v.event, v.handler)
         }
+        table._handlers.length = 0
     }
     //表格重载
     table.reload = function(id, options) {
