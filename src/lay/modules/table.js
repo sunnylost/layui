@@ -95,9 +95,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     {{# } }}</div>`
 
             return [
-                `<table cellspacing="0" cellpadding="0" border="0" class="layui-table" ${setSkin} ${
-                    setSize
-                } ${setEven}><thead>`,
+                `<table cellspacing="0" cellpadding="0" border="0" class="layui-table" ${setSkin} ${setSize} ${setEven}><thead>`,
                 '{{# layui.each(d.data.cols, function(i1, item1){ }}',
                 '<tr>',
                 generateFixed,
@@ -1830,6 +1828,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         delete data[table.config.checkName]
         delete data[table.config.indexName]
         return data
+    }
+
+    table.select = function(id) {
+        return this.instances[id] && this.instances[id].table
     }
 
     table.instances = {}
