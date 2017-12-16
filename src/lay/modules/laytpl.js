@@ -1,9 +1,9 @@
 ﻿/**
- 
+
  @Name : layui.laytpl 模板引擎
  @Author：贤心
  @License：MIT
- 
+
  */
 
 layui.define(function(exports) {
@@ -13,6 +13,8 @@ layui.define(function(exports) {
         open: '{{',
         close: '}}'
     }
+
+    let cache = {}
 
     let tool = {
         exp: function(str) {
@@ -51,9 +53,13 @@ layui.define(function(exports) {
     window.errors = 0
 
     //编译模版
-    Tpl.pt.parse = function(tpl, data) {
-        let that = this,
-            tplog = tpl
+    Tpl.pt.parse = function(tpl) {
+        let tplStr = tpl
+
+        if (cache[tplStr]) {
+            return cache[tplStr]
+        }
+
         let jss = exp('^' + config.open + '#', ''),
             jsse = exp(config.close + '$', '')
 
@@ -95,22 +101,24 @@ layui.define(function(exports) {
             })
         tpl = '"use strict";var view = "' + tpl + '";return view;'
 
-        try {
-            that.cache = tpl = new Function('d, _escape_', tpl)
-            return tpl(data, tool.escape)
-        } catch (e) {
-            delete that.cache
-            return tool.error(e, tplog)
-        }
+        return (cache[tplStr] = new Function('d, _escape_', tpl))
     }
 
     Tpl.pt.render = function(data, callback) {
-        let tpl
+        let fn
+        let result
 
         data = data || {}
-        tpl = this.cache ? this.cache(data, tool.escape) : this.parse(this.tpl, data)
-        if (!callback) return tpl
-        callback(tpl)
+        fn = cache[this.tpl] || this.parse(this.tpl)
+
+        try {
+            result = fn(data, tool.escape)
+        } catch (e) {
+            return tool.error(e, fn.toString())
+        }
+
+        if (!callback) return result
+        callback(result)
     }
 
     let laytpl = function(tpl) {

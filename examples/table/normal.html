@@ -34,7 +34,7 @@
                 {type:'numbers'}
                 ,{type: 'checkbox',classes:"hello"}
                 ,{field:'id', title:'ID', unresize: true, sort: true}
-                ,{field:'username', title:'用户名', templet: '#usernameTpl'}
+                ,{field:'username', title:'用户名'}
                 ,{field:'email', title:'邮箱'}
                 ,{field:'sex', title:'性别', templet: '#switchTpl', minWidth: 85, align:'center'}
                 ,{field:'lock', title:'是否锁定', templet: '#checkboxTpl', minWidth: 110, align:'center'}
@@ -46,9 +46,16 @@
             console.log('reload')
         })
 
-        setTimeout(()=>{
+        let count = 1000
+
+        let intervalId = setInterval(()=>{
+            count--
             table.reload('demo')
-        },2000)
+
+            if (count <= 0 ) {
+                clearInterval(intervalId)
+            }
+        },20)
     });
 </script>
 </body>

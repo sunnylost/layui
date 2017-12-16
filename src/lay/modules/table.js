@@ -228,6 +228,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         let that = this
         that.index = ++table.index
         that.config = $.extend({}, that.config, table.config, options)
+        that._handlers = []
         that.render()
     }
 
@@ -1194,31 +1195,49 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     })
                 }
             })
+
+        that._handlers.push({
+            target: th,
+            event: 'mousemove mouseleave mousedown'
+        })
+
+        let mousemoveHandler = function(e) {
+            if (dict.resizeStart) {
+                e.preventDefault()
+                if (dict.rule) {
+                    let setWidth = dict.ruleWidth + e.clientX - dict.offset[0]
+                    if (setWidth < dict.minWidth) setWidth = dict.minWidth
+                    dict.rule.style.width = setWidth + 'px'
+                    layer.close(that.tipsIndex)
+                    setFieldWidth(dict.field, setWidth)
+                }
+                resizing = 1
+            }
+        }
+        let mouseupHandler = function() {
+            if (dict.resizeStart) {
+                dict = {}
+                _BODY.css('cursor', '')
+                that.scrollPatch()
+            }
+            if (resizing === 2) {
+                resizing = null
+            }
+        }
+
         //拖拽中
-        _DOC
-            .on('mousemove', function(e) {
-                if (dict.resizeStart) {
-                    e.preventDefault()
-                    if (dict.rule) {
-                        let setWidth = dict.ruleWidth + e.clientX - dict.offset[0]
-                        if (setWidth < dict.minWidth) setWidth = dict.minWidth
-                        dict.rule.style.width = setWidth + 'px'
-                        layer.close(that.tipsIndex)
-                        setFieldWidth(dict.field, setWidth)
-                    }
-                    resizing = 1
-                }
-            })
-            .on('mouseup', function() {
-                if (dict.resizeStart) {
-                    dict = {}
-                    _BODY.css('cursor', '')
-                    that.scrollPatch()
-                }
-                if (resizing === 2) {
-                    resizing = null
-                }
-            })
+        _DOC.on('mousemove', mousemoveHandler).on('mouseup', mouseupHandler)
+
+        that._handlers.push({
+            target: _DOC,
+            event: 'mousemove',
+            handler: mousemoveHandler
+        })
+        that._handlers.push({
+            target: _DOC,
+            event: 'mouseup',
+            handler: mouseupHandler
+        })
 
         //排序
         th
@@ -1254,6 +1273,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     that.sort(field, 'desc', null, true)
                 }
             })
+
+        that._handlers.push({
+            target: th,
+            event: 'click'
+        })
 
         /**
          *
@@ -1326,6 +1350,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             let index = $tr.data('index')
 
             that.toggleRow(index)
+        })
+
+        that._handlers.push({
+            target: that.elem,
+            event: 'click'
         })
 
         let hoverTds = []
@@ -1414,6 +1443,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 othis.parent().data('content', this.value)
                 othis.remove()
             })
+
+        that._handlers.push({
+            target: that.elem,
+            event: 'click'
+        })
 
         //单元格事件
         that.layBody.on('click', 'td', function() {
@@ -1543,10 +1577,28 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             layer.close(that.tipsIndex)
         })
 
-        _WIN.on('resize', function() {
+        let resizeHandler = function() {
             //自适应
             that.fullSize()
             !that.config.disableAutoColumn && that.resizeColumn()
+        }
+
+        _WIN.on('resize', resizeHandler)
+
+        that._handlers.push({
+            target: _WIN,
+            event: 'resize',
+            handler: resizeHandler
+        })
+
+        that._handlers.push({
+            target: that.layBody,
+            event: 'click mouseenter mouseleave change blur'
+        })
+
+        that._handlers.push({
+            target: that.layMain,
+            event: 'scroll'
         })
     }
 
@@ -1789,6 +1841,13 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         }
     }
 
+    function clearEventsHandler(table) {
+        let handlers = table._handlers
+        for (let i = 0; i < handlers.length; i++) {
+            let v = handlers[i]
+            v.target.off(v.event, v.handler)
+        }
+    }
     //表格重载
     table.reload = function(id, options) {
         let config = table.instances[id]
@@ -1801,6 +1860,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         if (options && options.data && options.data.constructor === Array) {
             delete config.data
         }
+
+        clearEventsHandler(config.table)
 
         return table.render($.extend(true, {}, config, options))
     }
