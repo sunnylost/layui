@@ -10,24 +10,29 @@
 !(function() {
     'use strict'
 
+    let hasOwnProperty = Object.prototype.hasOwnProperty
     let isLayui = window.layui && layui.define,
         ready = {
             getPath: (function() {
-                let jsPath = document.currentScript
-                    ? document.currentScript.src
-                    : (function() {
-                        let js = document.scripts,
-                            last = js.length - 1,
-                            src
+                let jsPath
 
-                        for (let i = last; i > 0; i--) {
-                            if (js[i].readyState === 'interactive') {
-                                src = js[i].src
-                                break
-                            }
+                if (document.currentScript) {
+                    jsPath = document.currentScript.src
+                } else {
+                    let js = document.scripts,
+                        last = js.length - 1,
+                        src
+
+                    for (let i = last; i > 0; i--) {
+                        if (js[i].readyState === 'interactive') {
+                            src = js[i].src
+                            break
                         }
-                        return src || js[last].src
-                    })()
+                    }
+
+                    jsPath = src || js[last].src
+                }
+
                 return jsPath.substring(0, jsPath.lastIndexOf('/') + 1)
             })(),
 
@@ -112,8 +117,6 @@
         MOD_NAME = 'laydate',
         ELEM = '.layui-laydate',
         THIS = 'layui-this',
-        SHOW = 'layui-show',
-        HIDE = 'layui-hide',
         DISABLED = 'laydate-disabled',
         TIPS_OUT = '开始日期超出了结束日期<br>建议重新选择',
         LIMIT_YEAR = [100, 200000],
@@ -166,9 +169,13 @@
             clone = function(target, obj) {
                 target = target || (obj.constructor === Array ? [] : {})
                 for (let i in obj) {
-                    //如果值为对象，则进入递归，继续深度合并
-                    target[i] =
-                        obj[i] && obj[i].constructor === Object ? clone(target[i], obj[i]) : obj[i]
+                    if (hasOwnProperty.call(obj, i)) {
+                        //如果值为对象，则进入递归，继续深度合并
+                        target[i] =
+                            obj[i] && obj[i].constructor === Object
+                                ? clone(target[i], obj[i])
+                                : obj[i]
+                    }
                 }
                 return target
             }
@@ -205,7 +212,9 @@
         obj = obj || []
         if (obj.constructor === Object) {
             for (key in obj) {
-                if (fn.call(obj[key], key, obj[key])) break
+                if (hasOwnProperty.call(obj, key)) {
+                    if (fn.call(obj[key], key, obj[key])) break
+                }
             }
         } else {
             for (key = 0; key < obj.length; key++) {
@@ -216,7 +225,7 @@
     }
 
     //数字前置补零
-    lay.digit = function(num, length, end) {
+    lay.digit = function(num, length) {
         let str = ''
         num = String(num)
         length = length || 2
@@ -317,15 +326,16 @@
     //添加或获取属性
     LAY.prototype.attr = function(key, value) {
         let that = this
-        return value === undefined
-            ? (function() {
-                if (that.length > 0) {
-                    return that[0].getAttribute(key)
-                }
-            })()
-            : that.each(function(index, item) {
+
+        if (value === undefined) {
+            if (that.length > 0) {
+                return that[0].getAttribute(key)
+            }
+        } else {
+            return that.each(function(index, item) {
                 item.setAttribute(key, value)
             })
+        }
     }
 
     //移除属性
@@ -368,12 +378,14 @@
     //事件绑定
     LAY.prototype.on = function(eventName, fn) {
         return this.each(function(index, item) {
-            item.attachEvent
-                ? item.attachEvent('on' + eventName, function(e) {
+            if (item.attachEvent) {
+                item.attachEvent('on' + eventName, function(e) {
                     e.target = e.srcElement
                     fn.call(item, e)
                 })
-                : item.addEventListener(eventName, fn, false)
+            } else {
+                item.addEventListener(eventName, fn, false)
+            }
         })
     }
 
@@ -834,16 +846,14 @@
 
     //控件移除
     Class.prototype.remove = function(prev) {
-        let that = this,
-            options = that.config,
-            elem = lay('#' + (prev || that.elemID))
+        let elem = lay('#' + (prev || this.elemID))
 
         if (!elem.hasClass(ELEM_STATIC)) {
-            that.checkDate(function() {
+            this.checkDate(function() {
                 elem.remove()
             })
         }
-        return that
+        return this
     }
 
     //定位算法
@@ -948,16 +958,35 @@
                 : options.position === 'static' ? '' : elem.innerHTML,
             //校验日期有效数字
             checkValid = function(dateTime) {
-                if (dateTime.year > LIMIT_YEAR[1]) (dateTime.year = LIMIT_YEAR[1]), (error = true) //不能超过20万年
-                if (dateTime.month > 11) (dateTime.month = 11), (error = true)
-                if (dateTime.hours > 23) (dateTime.hours = 0), (error = true)
-                if (dateTime.minutes > 59) (dateTime.minutes = 0), dateTime.hours++, (error = true)
-                if (dateTime.seconds > 59)
-                    (dateTime.seconds = 0), dateTime.minutes++, (error = true)
+                if (dateTime.year > LIMIT_YEAR[1]) {
+                    dateTime.year = LIMIT_YEAR[1]
+                    error = true
+                } //不能超过20万年
+                if (dateTime.month > 11) {
+                    dateTime.month = 11
+                    error = true
+                }
+                if (dateTime.hours > 23) {
+                    dateTime.hours = 0
+                    error = true
+                }
+                if (dateTime.minutes > 59) {
+                    dateTime.minutes = 0
+                    dateTime.hours++
+                    error = true
+                }
+                if (dateTime.seconds > 59) {
+                    dateTime.seconds = 0
+                    dateTime.minutes++
+                    error = true
+                }
 
                 //计算当前月的最后一天
                 thisMaxDate = laydate.getEndDate(dateTime.month + 1, dateTime.year)
-                if (dateTime.date > thisMaxDate) (dateTime.date = thisMaxDate), (error = true)
+                if (dateTime.date > thisMaxDate) {
+                    dateTime.date = thisMaxDate
+                    error = true
+                }
             },
             //获得初始化日期值
             initDate = function(dateTime, value, index) {
@@ -969,32 +998,52 @@
                 }
                 lay.each(that.format, function(i, item) {
                     let thisv = parseFloat(value[i])
-                    if (value[i].length < item.length) error = true
+                    if (value[i].length < item.length) {
+                        error = true
+                    }
                     if (/yyyy|y/.test(item)) {
                         //年
-                        if (thisv < LIMIT_YEAR[0]) (thisv = LIMIT_YEAR[0]), (error = true) //年不能低于100年
+                        if (thisv < LIMIT_YEAR[0]) {
+                            thisv = LIMIT_YEAR[0]
+                            error = true
+                        } //年不能低于100年
                         dateTime.year = thisv
                     } else if (/MM|M/.test(item)) {
                         //月
-                        if (thisv < 1) (thisv = 1), (error = true)
+                        if (thisv < 1) {
+                            thisv = 1
+                            error = true
+                        }
                         dateTime.month = thisv - 1
                     } else if (/dd|d/.test(item)) {
                         //日
-                        if (thisv < 1) (thisv = 1), (error = true)
+                        if (thisv < 1) {
+                            thisv = 1
+                            error = true
+                        }
                         dateTime.date = thisv
                     } else if (/HH|H/.test(item)) {
                         //时
-                        if (thisv < 1) (thisv = 0), (error = true)
+                        if (thisv < 1) {
+                            thisv = 0
+                            error = true
+                        }
                         dateTime.hours = thisv
                         options.range && (that[startEnd[index]].hours = thisv)
                     } else if (/mm|m/.test(item)) {
                         //分
-                        if (thisv < 1) (thisv = 0), (error = true)
+                        if (thisv < 1) {
+                            thisv = 0
+                            error = true
+                        }
                         dateTime.minutes = thisv
                         options.range && (that[startEnd[index]].minutes = thisv)
                     } else if (/ss|s/.test(item)) {
                         //秒
-                        if (thisv < 1) (thisv = 0), (error = true)
+                        if (thisv < 1) {
+                            thisv = 0
+                            error = true
+                        }
                         dateTime.seconds = thisv
                         options.range && (that[startEnd[index]].seconds = thisv)
                     }
@@ -1141,10 +1190,15 @@
             tds = lay(that.table[index]).find('td'),
             elemYM = lay(that.elemHeader[index][2]).find('span')
 
-        if (dateTime.year < LIMIT_YEAR[0])
-            (dateTime.year = LIMIT_YEAR[0]), that.hint('最低只能支持到公元' + LIMIT_YEAR[0] + '年')
-        if (dateTime.year > LIMIT_YEAR[1])
-            (dateTime.year = LIMIT_YEAR[1]), that.hint('最高只能支持到公元' + LIMIT_YEAR[1] + '年')
+        if (dateTime.year < LIMIT_YEAR[0]) {
+            dateTime.year = LIMIT_YEAR[0]
+            that.hint('最低只能支持到公元' + LIMIT_YEAR[0] + '年')
+        }
+
+        if (dateTime.year > LIMIT_YEAR[1]) {
+            dateTime.year = LIMIT_YEAR[1]
+            that.hint('最高只能支持到公元' + LIMIT_YEAR[1] + '年')
+        }
 
         //记录初始值
         if (!that.firstDate) {
@@ -1215,15 +1269,18 @@
         //初始默认选择器
         if (isAlone) {
             if (options.range) {
-                value
-                    ? (that.endDate = that.endDate || {
+                if (value) {
+                    that.endDate = that.endDate || {
                         year: dateTime.year + (options.type === 'year' ? 1 : 0),
                         month: dateTime.month + (options.type === 'month' ? 0 : -1)
-                    })
-                    : (that.startDate = that.startDate || {
+                    }
+                } else {
+                    that.startDate = that.startDate || {
                         year: dateTime.year,
                         month: dateTime.month
-                    })
+                    }
+                }
+
                 if (value) {
                     that.listYM = [
                         [that.startDate.year, that.startDate.month + 1],
@@ -1231,13 +1288,15 @@
                     ]
                     that.list(options.type, 0).list(options.type, 1)
                     //同步按钮可点状态
-                    options.type === 'time'
-                        ? that.setBtnStatus(
+                    if (options.type === 'time') {
+                        that.setBtnStatus(
                             '时间',
                             lay.extend({}, that.systemDate(), that.startTime),
                             lay.extend({}, that.systemDate(), that.endTime)
                         )
-                        : that.setBtnStatus(true)
+                    } else {
+                        that.setBtnStatus(true)
+                    }
                 }
             }
             if (!options.range) {
@@ -1295,7 +1354,8 @@
             text = isCN ? '年' : '',
             listYM = that.listYM[index] || {},
             hms = ['hours', 'minutes', 'seconds'],
-            startEnd = ['startTime', 'endTime'][index]
+            startEnd = ['startTime', 'endTime'][index],
+            setTimeStatus
 
         if (listYM[0] < 1) listYM[0] = 1
 
@@ -1304,7 +1364,7 @@
             let yearNum,
                 startY = (yearNum = listYM[0] - 7)
             if (startY < 1) startY = yearNum = 1
-            lay.each(new Array(15), function(i) {
+            lay.each(new Array(15), function() {
                 let li = lay.elem('li', {
                         'lay-ym': yearNum
                     }),
@@ -1348,7 +1408,7 @@
         } else if (type === 'time') {
             //时间列表
             //检测时分秒状态是否在有效日期时间范围内
-            var setTimeStatus = function() {
+            setTimeStatus = function() {
                 lay(ul)
                     .find('ol')
                     .each(function(i, ol) {
@@ -1584,14 +1644,20 @@
     Class.prototype.parse = function(state, date) {
         let that = this,
             options = that.config,
-            dateTime =
-                date ||
-                (state
-                    ? lay.extend({}, that.endDate, that.endTime)
-                    : options.range
-                        ? lay.extend({}, that.startDate, that.startTime)
-                        : options.dateTime),
+            dateTime,
             format = that.format.concat()
+
+        if (date) {
+            dateTime = date
+        } else {
+            if (state) {
+                dateTime = lay.extend({}, that.endDate, that.endTime)
+            } else {
+                dateTime = options.range
+                    ? lay.extend({}, that.startDate, that.startTime)
+                    : options.dateTime
+            }
+        }
 
         //转义为规定格式
         lay.each(format, function(i, item) {
@@ -1808,9 +1874,10 @@
                 setDateTime()
                 that.startState = true
             }
-            lay(that.footer)
-                .find(ELEM_CONFIRM)
-                [that.endDate ? 'removeClass' : 'addClass'](DISABLED)
+
+            let $confirm = lay(that.footer).find(ELEM_CONFIRM)
+
+            $confirm[that.endDate ? 'removeClass' : 'addClass'](DISABLED)
         } else if (options.position === 'static') {
             //直接嵌套的选中
             setDateTime(true)
@@ -1858,13 +1925,19 @@
                 //清空、重置
                 clear: function() {
                     that.setValue('').remove()
-                    isStatic && (lay.extend(dateTime, that.firstDate), that.calendar())
-                    options.range &&
-                        (delete that.startState,
-                            delete that.endState,
-                            delete that.endDate,
-                            delete that.startTime,
-                            delete that.endTime)
+
+                    if (isStatic) {
+                        lay.extend(dateTime, that.firstDate)
+                        that.calendar()
+                    }
+
+                    if (options.range) {
+                        delete that.startState
+                        delete that.endState
+                        delete that.endDate
+                        delete that.startTime
+                        delete that.endTime
+                    }
                     that.done(['', {}, {}])
                 },
 
@@ -2119,21 +2192,23 @@
     window.lay = window.lay || lay
 
     //加载方式
-    isLayui
-        ? (laydate.ready(),
-          layui.define(function(exports) {
-              //layui加载
-              laydate.path = layui.cache.dir
-              exports(MOD_NAME, laydate)
-          }))
-        : typeof define === 'function' && define.amd
-          ? define(function() {
+    if (isLayui) {
+        laydate.ready()
+        layui.define(function(exports) {
+            //layui加载
+            laydate.path = layui.cache.dir
+            exports(MOD_NAME, laydate)
+        })
+    } else {
+        if (typeof define === 'function' && define.amd) {
+            define(function() {
                 //requirejs加载
                 return laydate
             })
-          : (function() {
-                //普通script标签加载
-                laydate.ready()
-                window.laydate = laydate
-            })()
+        } else {
+            //普通script标签加载
+            laydate.ready()
+            window.laydate = laydate
+        }
+    }
 })()
