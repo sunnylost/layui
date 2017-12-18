@@ -426,10 +426,9 @@ hr, .layui-timeline-item:before{background-color: #e6e6e6;}
 .layui-select-disabled .layui-edge{border-top-color: #d2d2d2}
 
 /*TODO: Select */
-
 .layui-select-options{visibility:hidden; padding: 5px 0; z-index: 999; min-width: 100%; border: 1px solid #d2d2d2; max-height: 300px; overflow-y: auto; background-color: #fff; border-radius: 2px; box-shadow: 0 2px 4px rgba(0,0,0,.12); box-sizing: border-box;}
 .layui-select-options dt,
-.layui-select-options dd{padding: 0 10px; line-height: 36px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.layui-select-options dd{margin-bottom:1px;padding: 0 10px; line-height: 36px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 .layui-select-options dt{font-size: 12px; color: #999;}
 .layui-select-options dd{cursor: pointer;}
 .layui-select-options dd:hover{background-color: #f2f2f2;}
@@ -442,8 +441,44 @@ hr, .layui-timeline-item:before{background-color: #e6e6e6;}
 .layui-form-selected dl{display: block;}
 
 /* select 多选 */
-.layui-form-select dd .layui-icon {
+.layui-select-options .layui-icon {
+    float: right;
     display: none;
+}
+
+.layui-select-options dd:hover .layui-icon {
+    display: inline-block;
+    color: #5FB878;
+}
+
+.layui-select-options .layui-this .layui-icon,
+.layui-select-options .layui-this:hover .layui-icon{
+    display: inline-block;
+    color: #fff;
+}
+
+/**
+选择框中的 tag
+ */
+.layui-form-select-multi .layui-btn,
+.layui-form-select-multi .layui-btn .layui-icon{
+    margin-top: 3px;
+}
+
+.layui-form-select-multi .layui-btn {
+    margin-right: 10px;
+}
+
+.layui-form-select-multi .layui-btn+.layui-btn {
+    margin-left: 0;
+}
+
+/**
+tag 折行
+ */
+.layui-form-select-multi div.layui-input {
+    height: auto;
+    min-height: 38px;
 }
 
 /* 复选框 */.layui-form-checkbox{position: relative; display: inline-block; vertical-align: middle; height: 30px; line-height: 28px; margin-right: 10px; padding-right: 30px; border: 1px solid #d2d2d2; background-color: #fff; cursor: pointer; font-size: 0; border-radius: 2px;  -webkit-transition: .1s linear; transition: .1s linear; box-sizing: border-box;}

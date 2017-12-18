@@ -16,17 +16,32 @@
         body {
             padding: 10px;
         }
+
+        .layui-form-item {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
 <form class="layui-form layui-form-pane1" action="">
-    <select name="quiz">
+    <select name="quiz" data-value="你工作的第一个城市">
         <option value="">请选择问题</option>
         <option value="你工作的第一个城市">你工作的第一个城市</option>
         <option value="你的工号" disabled>你的工号</option>
         <option value="你最喜欢的老师">你最喜欢的老师</option>
     </select>
+    <div class="layui-form-item">
+        <select name="interest" lay-filter="aihao" lay-multi>
+            <option value=""></option>
+            <option value="0">写作</option>
+            <option value="1">阅读</option>
+            <option value="2">游戏</option>
+            <option value="3">音乐</option>
+            <option value="4">旅行</option>
+            <option value="5">读书</option>
+        </select>
+    </div>
     <div class="layui-form-item" pane>
         <label class="layui-form-label">原始复选框</label>
         <div class="layui-input-block">
@@ -221,11 +236,11 @@
 
         //事件监听
         form.on('select', function (data) {
-            console.log(this)
+            //console.log(this)
         })
 
         form.on('select(aihao)', function (data) {
-            console.log(data)
+            //console.log(data)
         })
 
         form.on('checkbox', function (data) {
@@ -266,6 +281,7 @@
 <script>
     layui.use('jquery', function () {
         var $ = layui.jquery
+        window.$ = $
         var submit = function () {
             return false
         }
