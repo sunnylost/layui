@@ -102,6 +102,7 @@ layui.define('layer', function(exports) {
                         },
                         events = function(reElem, disabled, isSearch) {
                             let select = $(this)
+                            let fieldName = select.attr('name')
                             let title = reElem.find('.' + TITLE)
                             let input = title.find('input')
                             let dl
@@ -133,9 +134,7 @@ layui.define('layer', function(exports) {
                                 if (type === 'add') {
                                     $option && $option.addClass(THIS)
                                     let $input = (cacheObj.inputs[value] = $(
-                                        `<input type="hidden" name="${select.attr(
-                                            'name'
-                                        )}" value="${value}">`
+                                        `<input type="hidden" name="${fieldName}" value="${value}">`
                                     ))
 
                                     $input.insertAfter(select)
@@ -162,9 +161,11 @@ layui.define('layer', function(exports) {
                                 if (cacheObj.inputsLength) {
                                     $div.removeClass(HIDE)
                                     $input.addClass(HIDE)
+                                    select.attr('name', '')
                                 } else {
                                     $div.addClass(HIDE)
                                     $input.removeClass(HIDE)
+                                    select.attr('name', fieldName)
                                 }
                             }
 
@@ -449,6 +450,7 @@ layui.define('layer', function(exports) {
                             cache[id].val = {
                                 [value]: 1
                             }
+                            othis.val(value)
                         }
 
                         let isSearch = typeof othis.attr('lay-search') === 'string',
