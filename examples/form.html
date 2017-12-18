@@ -27,40 +27,14 @@
         <option value="你的工号" disabled>你的工号</option>
         <option value="你最喜欢的老师">你最喜欢的老师</option>
     </select>
-
-    <div class="layui-form-item">
-        <label class="layui-form-label">输入框</label>
+    <div class="layui-form-item" pane>
+        <label class="layui-form-label">原始复选框</label>
         <div class="layui-input-block">
-            <input type="text" name="xxx " autocomplete="off" class="layui-input">
+            <input type="checkbox" name="like1" value="write" lay-skin="primary" title="写作">
+            <input type="checkbox" name="like1" value="read" lay-skin="primary" title="阅读">
+            <input type="checkbox" name="like1" value="game" lay-skin="primary" title="游戏">
         </div>
     </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">输入框</label>
-        <div class="layui-input-block">
-            <input type="text" name="arr[]" autocomplete="off" class="layui-input">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">输入框</label>
-        <div class="layui-input-block">
-            <input type="text" name="arr[]" autocomplete="off" class="layui-input">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">输入框</label>
-        <div class="layui-input-block">
-            <input type="text" name="bbb[]" autocomplete="off" class="layui-input">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">输入框</label>
-        <div class="layui-input-block">
-            <input type="text" name="bbb[]" autocomplete="off" class="layui-input">
-        </div>
-    </div>
-    <input type="checkbox" name="like1[]" lay-skin="primary" title="写作">
-    <input type="checkbox" name="like1[]" lay-skin="primary" title="写作">
-    <input type="checkbox" name="like1[]" lay-skin="primary" title="写作">
     <div class="layui-form-item">
         <div class="layui-input-block">
             <button class="layui-btn" lay-submit lay-filter="*">立即提交</button>
@@ -268,7 +242,7 @@
 
         //监听提交
         form.on('submit(*)', function (data) {
-            console.log(data)
+            console.log(data.field)
             return false
         })
 

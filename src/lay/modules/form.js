@@ -671,24 +671,33 @@ layui.define('layer', function(exports) {
 
         let nameIndex = 0 //数组 name 索引
         layui.each(fieldElem, function(_, item) {
-            item.name = (item.name || '').replace(/^\s*|\s*&/, '')
+            let name
+            name = item.name = (item.name || '').replace(/^\s*|\s*&/, '')
 
-            if (!item.name || item.disabled) {
+            if (!name || item.disabled) {
                 return
             }
 
             //用于支持数组 name
-            if (/^.*\[]$/.test(item.name)) {
-                let key = item.name.match(/^(.*)\[]$/g)[0]
+            if (/^.*\[]$/.test(name)) {
+                let key = name.match(/^(.*)\[]$/g)[0]
                 nameIndex[key] = nameIndex[key] | 0
-                item.name = item.name.replace(/^(.*)\[]$/, '$1[' + nameIndex[key]++ + ']')
+                name = item.name = name.replace(/^(.*)\[]$/, '$1[' + nameIndex[key]++ + ']')
             }
 
             if (/^checkbox|radio$/.test(item.type) && !item.checked) {
                 return
             }
 
-            field[item.name] = item.value
+            if (isArray(field[name])) {
+                field[name].push(item.value)
+            } else {
+                if (typeof field[name] !== 'undefined') {
+                    field[name] = [field[name], item.value]
+                } else {
+                    field[name] = item.value
+                }
+            }
         })
 
         //获取字段
@@ -697,6 +706,11 @@ layui.define('layer', function(exports) {
             form: formElem,
             field: field
         })
+    }
+
+    let toString = Object.prototype.toString
+    function isArray(arr) {
+        return toString.call(arr) === '[object Array]'
     }
 
     //自动完成渲染
