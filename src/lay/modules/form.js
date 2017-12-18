@@ -72,13 +72,19 @@ layui.define('layer', function(exports) {
             items = {
                 //下拉选择框
                 select: function() {
+                    let cache = {}
+                    let uuid = 0
+
                     let TIPS = '请选择',
                         CLASS = 'layui-form-select',
                         TITLE = 'layui-select-title',
                         NONE = 'layui-select-none',
+                        CLASS_MULTI = 'layui-form-select-multi',
+                        MULTI = 'lay-multi',
                         initValue = '',
                         thatInput,
                         selects = elemForm.find('select'),
+                        layerIndex = -1,
                         hide = function(e, clear) {
                             if (
                                 !$(e.target)
@@ -88,6 +94,7 @@ layui.define('layer', function(exports) {
                             ) {
                                 $('.' + CLASS).removeClass(CLASS + 'ed ' + CLASS + 'up')
                                 thatInput && initValue && thatInput.val(initValue)
+                                layer.close(layerIndex)
                             }
                             thatInput = null
                         },
@@ -95,32 +102,99 @@ layui.define('layer', function(exports) {
                             let select = $(this)
                             let title = reElem.find('.' + TITLE)
                             let input = title.find('input')
-                            let dl = reElem.find('dl')
-                            let dds = dl.children('dd')
-
+                            let dl
+                            let dds
+                            let uuid = select.data('uuid')
+                            let cacheObj = cache[uuid]
                             if (disabled) return
 
                             //展开下拉
                             let showDown = function() {
-                                    let top =
-                                            reElem.offset().top +
-                                            reElem.outerHeight() +
-                                            5 -
-                                            win.scrollTop(),
-                                        dlHeight = dl.outerHeight()
-                                    reElem.addClass(CLASS + 'ed')
-                                    dds.removeClass(HIDE)
+                                    let offset = reElem.offset()
+                                    let h = reElem.height()
+                                    let scrollTop
 
-                                    //上下定位识别
-                                    if (top + dlHeight > win.height() && top >= dlHeight) {
-                                        reElem.addClass(CLASS + 'up')
-                                    }
+                                    scrollTop = win.scrollTop()
+                                    offset.top = offset.top + h - scrollTop + 'px'
+                                    offset.left += 'px'
+
+                                    layerIndex = layer.open({
+                                        anim: -1,
+                                        isOutAnim: false,
+                                        closeBtn: false,
+                                        title: false,
+                                        content: cacheObj.renderListPanel(select.val()),
+                                        shade: 0,
+                                        time: 0,
+                                        type: 1,
+                                        area: reElem.width() + 'px',
+                                        offset: [offset.top, offset.left],
+                                        success(layero) {
+                                            dl = layero.find('.layui-select-options')
+                                            dds = dl.children('dd')
+
+                                            reElem.addClass(CLASS + 'ed')
+                                            dds.removeClass(HIDE)
+
+                                            let dlHeight = dl.outerHeight()
+
+                                            reElem.addClass(CLASS + 'ed')
+                                            dds.removeClass(HIDE)
+
+                                            if (
+                                                layero.offset().top + dlHeight + 5 - scrollTop >
+                                                win.height()
+                                            ) {
+                                                layero.css({
+                                                    top:
+                                                        parseFloat(layero.css('top')) - dlHeight - h
+                                                })
+                                            }
+
+                                            dl.css('visibility', 'visible')
+
+                                            //选择
+                                            dds.on('click', function() {
+                                                let othis = $(this)
+                                                let value = othis.attr('lay-value')
+                                                let filter = select.attr('lay-filter') //获取过滤器
+
+                                                if (othis.hasClass(DISABLED)) return false
+
+                                                if (othis.hasClass('layui-select-tips')) {
+                                                    input.val('')
+                                                } else {
+                                                    input.val(othis.text())
+                                                    othis.addClass(THIS)
+                                                }
+
+                                                othis.siblings().removeClass(THIS)
+                                                select.val(value).removeClass('layui-form-danger')
+                                                layui.event.call(
+                                                    this,
+                                                    MOD_NAME,
+                                                    'select(' + filter + ')',
+                                                    {
+                                                        elem: select[0],
+                                                        value: value,
+                                                        othis: reElem
+                                                    }
+                                                )
+
+                                                hideDown()
+                                                return false
+                                            })
+                                        }
+                                    })
                                 },
                                 hideDown = function(choose) {
                                     reElem.removeClass(CLASS + 'ed ' + CLASS + 'up')
                                     input.blur()
+                                    dds && dds.off('click')
 
                                     if (choose) return
+
+                                    layer.close(layerIndex)
 
                                     notOption(input.val(), function(none) {
                                         if (none) {
@@ -233,33 +307,6 @@ layui.define('layer', function(exports) {
                                 })
                             }
 
-                            //选择
-                            dds.on('click', function() {
-                                let othis = $(this)
-                                let value = othis.attr('lay-value')
-                                let filter = select.attr('lay-filter') //获取过滤器
-
-                                if (othis.hasClass(DISABLED)) return false
-
-                                if (othis.hasClass('layui-select-tips')) {
-                                    input.val('')
-                                } else {
-                                    input.val(othis.text())
-                                    othis.addClass(THIS)
-                                }
-
-                                othis.siblings().removeClass(THIS)
-                                select.val(value).removeClass('layui-form-danger')
-                                layui.event.call(this, MOD_NAME, 'select(' + filter + ')', {
-                                    elem: select[0],
-                                    value: value,
-                                    othis: reElem
-                                })
-
-                                hideDown(true)
-                                return false
-                            })
-
                             reElem.find('dl>dt').on('click', function() {
                                 return false
                             })
@@ -279,6 +326,11 @@ layui.define('layer', function(exports) {
                             selected = $(select.options[select.selectedIndex]), //获取当前选中项
                             optionsFirst = select.options[0]
 
+                        let id = uuid++
+                        othis.data('uuid', id)
+
+                        cache[id] = {}
+
                         if (typeof othis.attr('lay-ignore') === 'string') return othis.show()
 
                         if (hasDefaultVal) {
@@ -290,12 +342,19 @@ layui.define('layer', function(exports) {
                                 ? optionsFirst.value ? TIPS : optionsFirst.innerHTML || TIPS
                                 : TIPS
 
+                        let hasMulti
+
+                        if (othis.attr(MULTI)) {
+                            hasMulti = true
+                        }
+
                         //替代元素
                         let reElem = $(
                             [
                                 '<div class="' +
                                     (isSearch ? '' : 'layui-unselect ') +
                                     CLASS +
+                                    (hasMulti ? ' ' + CLASS_MULTI : '') +
                                     (disabled ? ' layui-select-disabled' : '') +
                                     '">',
                                 '<div class="' +
@@ -311,7 +370,19 @@ layui.define('layer', function(exports) {
                                     (disabled ? ' ' + DISABLED : '') +
                                     '">',
                                 '<i class="layui-edge"></i></div>',
-                                '<dl class="layui-anim layui-anim-upbit' +
+                                '</div>'
+                            ].join('')
+                        )
+
+                        hasRender[0] && hasRender.remove() //如果已经渲染，则Rerender
+                        othis.after(reElem)
+                        events.call(this, reElem, disabled, isSearch)
+
+                        cache[id].renderListPanel = renderListPanel
+
+                        function renderListPanel(value) {
+                            return [
+                                '<dl class="layui-select-options layui-anim layui-anim-upbit' +
                                     (othis.find('optgroup')[0] ? ' layui-select-group' : '') +
                                     '">' +
                                     (function(options) {
@@ -334,6 +405,9 @@ layui.define('layer', function(exports) {
                                                         (item.disabled ? ' ' + DISABLED : '') +
                                                         '">' +
                                                         item.innerHTML +
+                                                        (hasMulti
+                                                            ? '<i class="layui-icon">&#xe605;</i>'
+                                                            : '') +
                                                         '</dd>'
                                                 )
                                             }
@@ -346,14 +420,9 @@ layui.define('layer', function(exports) {
                                             )
                                         return arr.join('')
                                     })(othis.find('*')) +
-                                    '</dl>',
-                                '</div>'
+                                    '</dl>'
                             ].join('')
-                        )
-
-                        hasRender[0] && hasRender.remove() //如果已经渲染，则Rerender
-                        othis.after(reElem)
-                        events.call(this, reElem, disabled, isSearch)
+                        }
                     })
                 },
                 //复选框/开关
