@@ -85,6 +85,7 @@ layui.define('layer', function(exports) {
                         thatInput,
                         selects = elemForm.find('select'),
                         layerIndex = -1,
+                        layerObj,
                         hide = function(e, clear) {
                             if (
                                 !$(e.target)
@@ -95,6 +96,7 @@ layui.define('layer', function(exports) {
                                 $('.' + CLASS).removeClass(CLASS + 'ed ' + CLASS + 'up')
                                 thatInput && initValue && thatInput.val(initValue)
                                 layer.close(layerIndex)
+                                layerObj = null
                             }
                             thatInput = null
                         },
@@ -102,7 +104,6 @@ layui.define('layer', function(exports) {
                             let select = $(this)
                             let title = reElem.find('.' + TITLE)
                             let input = title.find('input')
-                            let layerObj
                             let dl
                             let dds
                             let uuid = select.data('uuid')
@@ -149,7 +150,7 @@ layui.define('layer', function(exports) {
                                     /**
                                      * 取消选中
                                      */
-                                    $option.removeClass(THIS)
+                                    $option && $option.removeClass(THIS)
                                     cacheObj.inputs[value] && cacheObj.inputs[value].remove()
                                     delete cacheObj.inputs[value]
 
@@ -252,7 +253,6 @@ layui.define('layer', function(exports) {
                                                 } else {
                                                     if (othis.hasClass('layui-select-tips')) {
                                                         input.val('')
-                                                        cacheObj.val = {}
                                                     } else {
                                                         input.val(othis.text())
                                                         othis.addClass(THIS)
@@ -300,7 +300,7 @@ layui.define('layer', function(exports) {
                                     notOption(input.val(), function(none) {
                                         if (none) {
                                             initValue = dl.find('.' + THIS).html()
-                                            input && input.val(initValue)
+                                            input.hasClass(HIDE) || input.val(initValue)
                                         }
                                     })
                                 }
