@@ -780,6 +780,13 @@ layui.define('layer', function(exports) {
                 verType = othis.attr('lay-verType'), //提示方式
                 value = othis.val()
 
+            let name
+            name = item.name = (item.name || '').replace(/^\s*|\s*&/, '')
+
+            if (!name || item.disabled) {
+                return
+            }
+
             if (value === null || value === undefined) {
                 value = ''
             }
