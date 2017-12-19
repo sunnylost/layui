@@ -1,4 +1,4 @@
-/**
+﻿/**
 
  @Name：layer v3.1.0 Web弹层组件
  @Author：贤心
@@ -1164,6 +1164,13 @@
          * @type {string}
          */
         let cache = globalCache[index]
+        /**
+         * 如果 cache 不存在，说明已经清理过了
+         */
+        if (!cache) {
+            return
+        }
+
         let layero = cache.layero
         let config = cache.config
 
