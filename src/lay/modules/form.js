@@ -137,7 +137,7 @@ layui.define('layer', function(exports) {
                                         `<input type="hidden" name="${fieldName}" value="${value}">`
                                     ))
 
-                                    $input.insertAfter(select)
+                                    reElem.append($input)
 
                                     let $tag = $(
                                         `<div class="layui-btn layui-btn-sm layui-btn-primary" lay-value="${value}">${val}<i class="layui-icon">&#x1006;</i></div>`

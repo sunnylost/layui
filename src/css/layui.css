@@ -462,7 +462,7 @@ hr, .layui-timeline-item:before{background-color: #e6e6e6;}
  */
 .layui-form-select-multi .layui-btn,
 .layui-form-select-multi .layui-btn .layui-icon{
-    margin-top: 3px;
+    margin-top: 5px;
 }
 
 .layui-form-select-multi .layui-btn {
