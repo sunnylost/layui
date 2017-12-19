@@ -61,14 +61,9 @@ layui.define('layer', function(exports) {
     }
 
     //表单控件渲染
-    Form.prototype.render = function(type, filter) {
+    Form.prototype.render = function(type, filter, elFilter) {
         let that = this,
-            elemForm = $(
-                ELEM +
-                    (function() {
-                        return filter ? '[lay-filter="' + filter + '"]' : ''
-                    })()
-            ),
+            elemForm = $(ELEM + (filter ? '[lay-filter="' + filter + '"]' : '')),
             items = {
                 //下拉选择框
                 select: function() {
@@ -429,6 +424,10 @@ layui.define('layer', function(exports) {
                                 .on('click', hide)
                         }
 
+                    if (elFilter) {
+                        selects = selects.filter(`[lay-filter="${elFilter}"]`)
+                    }
+
                     selects.each(function(index, select) {
                         let othis = $(this),
                             hasRender = othis.next('.' + CLASS),
@@ -584,6 +583,10 @@ layui.define('layer', function(exports) {
                     }
                     let checks = elemForm.find('input[type=checkbox]')
 
+                    if (elFilter) {
+                        checks = checks.filter(`[lay-filter="${elFilter}"]`)
+                    }
+
                     let events = function(reElem, RE_CLASS) {
                         let check = $(this)
 
@@ -706,6 +709,10 @@ layui.define('layer', function(exports) {
                             })
                         }
 
+                    if (elFilter) {
+                        radios = radios.filter(`[lay-filter="${elFilter}"]`)
+                    }
+
                     radios.each(function(index, radio) {
                         let othis = $(this),
                             hasRender = othis.next('.' + CLASS),
@@ -735,6 +742,8 @@ layui.define('layer', function(exports) {
                     })
                 }
             }
+
+        elemForm = $(ELEM + (filter ? '[lay-filter="' + filter + '"]' : ''))
 
         if (type) {
             if (items[type]) {
