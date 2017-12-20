@@ -249,18 +249,20 @@ layui.define('layer', function(exports) {
                                                 } else {
                                                     if (othis.hasClass('layui-select-tips')) {
                                                         input.val('')
+                                                        cacheObj.val = {}
                                                     } else {
                                                         input.val(othis.text())
                                                         othis.addClass(THIS)
-                                                        othis.siblings().removeClass(THIS)
-                                                        select
-                                                            .val(value)
-                                                            .removeClass('layui-form-danger')
 
                                                         cacheObj.val = {
                                                             [value]: 1
                                                         }
                                                     }
+
+                                                    othis.siblings().removeClass(THIS)
+                                                    select
+                                                        .val(value)
+                                                        .removeClass('layui-form-danger')
                                                 }
 
                                                 layui.event.call(
@@ -275,7 +277,7 @@ layui.define('layer', function(exports) {
                                                 )
 
                                                 if (!hasMulti || !value) {
-                                                    hideDown()
+                                                    hideDown(true)
                                                 }
 
                                                 return false
@@ -289,9 +291,9 @@ layui.define('layer', function(exports) {
                                     input.blur()
                                     dds && dds.off('click')
 
-                                    if (choose) return
-
                                     layer.close(layerIndex)
+
+                                    if (choose) return
 
                                     notOption(input.val(), function(none) {
                                         if (none) {
