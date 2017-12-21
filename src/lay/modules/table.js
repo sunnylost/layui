@@ -794,10 +794,33 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                         if (item3.fixed === 'right') tds_fixed_r.push(td)
                     })
 
-                    trs.push('<tr data-index="' + i1 + '">' + tds.join('') + '</tr>')
-                    trs_fixed.push('<tr data-index="' + i1 + '">' + tds_fixed.join('') + '</tr>')
+                    let trClass = i1 % 2 ? 'layui-tr-odd' : 'layui-tr-even'
+                    trs.push(
+                        '<tr data-index="' +
+                            i1 +
+                            '" class="' +
+                            trClass +
+                            '">' +
+                            tds.join('') +
+                            '</tr>'
+                    )
+                    trs_fixed.push(
+                        '<tr data-index="' +
+                            i1 +
+                            '"class="' +
+                            trClass +
+                            '">' +
+                            tds_fixed.join('') +
+                            '</tr>'
+                    )
                     trs_fixed_r.push(
-                        '<tr data-index="' + i1 + '">' + tds_fixed_r.join('') + '</tr>'
+                        '<tr data-index="' +
+                            i1 +
+                            '" class="' +
+                            trClass +
+                            '">' +
+                            tds_fixed_r.join('') +
+                            '</tr>'
                     )
                 })
 
