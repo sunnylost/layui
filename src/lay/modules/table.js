@@ -509,6 +509,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 success: function(res) {
                     if (getProp(res, response.statusName) != response.statusCode) {
                         that.renderForm()
+                        that.layPage.hide()
                         return that.layMain.html(
                             '<div class="' +
                                 NONE +
@@ -517,7 +518,9 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                 '</div>'
                         )
                     }
-                    that.renderData(res, curr, getProp(res, response.countName)), sort()
+                    that.layPage.show()
+                    that.renderData(res, curr, getProp(res, response.countName))
+                    sort()
                     options.time = new Date().getTime() - that.startTime + ' ms' //耗时（接口请求+视图渲染）
                     loadIndex && layer.close(loadIndex)
                     typeof options.done === 'function' &&
