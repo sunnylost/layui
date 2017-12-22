@@ -30,7 +30,15 @@ layui.define('layer', function(exports) {
                     ],
                     url: [/(^#)|(^http(s*):\/\/[^\s]+\.[^\s]+)/, '链接格式不正确'],
                     number: function(value) {
+                        value = $.trim(value)
                         if (!value || isNaN(value)) return '只能填写数字'
+                    },
+                    /**
+                     * 整数
+                     */
+                    digit: function(value) {
+                        value = $.trim(value)
+                        if (!value || isNaN(value) || /[.e]/.test(value)) return '只能填写整数'
                     },
                     date: [
                         /^(\d{4})[-/](\d|0\d|1[0-2])([-/](\d|0\d|[1-2][0-9]|3[0-1]))*$/,
