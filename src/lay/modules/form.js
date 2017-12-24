@@ -455,11 +455,21 @@ layui.define('layer', function(exports) {
                         if (typeof othis.attr('lay-ignore') === 'string') return othis.show()
 
                         if (hasDefaultVal) {
-                            selected = othis.find('option[value="' + value + '"]')
-                            cache[id].val = {
-                                [value]: 1
+                            let vals = value.split(',')
+
+                            if (vals.length === 1) {
+                                selected = othis.find('option[value="' + value + '"]')
+                                cache[id].val = {
+                                    [value]: 1
+                                }
+                                othis.val(value)
+                            } else {
+                                let valObj = (cache[id].val = {})
+                                for (let i = 0; i < vals.length; i++) {
+                                    let v = vals[i]
+                                    valObj[v] = 1
+                                }
                             }
-                            othis.val(value)
                         }
 
                         let isSearch = typeof othis.attr('lay-search') === 'string',
@@ -535,7 +545,38 @@ layui.define('layer', function(exports) {
                         if (hasMulti) {
                             cache[id].inputs = {}
                             cache[id].inputsLength = 0
-                            cache[id].val = {}
+
+                            if (!cache[id].val) {
+                                cache[id].inputs = {}
+                                cache[id].inputsLength = 0
+                                cache[id].val = {}
+                            } else {
+                                let valArr = value.split(',')
+                                let fieldName = othis.attr('name')
+                                for (let i = 0; i < valArr.length; i++) {
+                                    let item = valArr[i]
+                                    let $opt = othis.find(`option[value="${item}"]`).clone()
+                                    $opt.children().remove()
+                                    let val = $opt.html()
+
+                                    let $input = $(
+                                        `<input type="hidden" name="${fieldName}" value="${item}">`
+                                    )
+
+                                    cache[id].inputs[item] = $input
+                                    reElem.append($input)
+
+                                    let $tag = $(
+                                        `<div class="layui-btn layui-btn-sm layui-btn-primary" lay-value="${item}">${val}<i class="layui-icon">&#x1006;</i></div>`
+                                    )
+                                    reElem.find('div.layui-input').append($tag)
+                                    cache[id].val[item] = $tag
+                                }
+                                cache[id].inputsLength = valArr.length
+                            }
+
+                            reElem.find('div.layui-input').removeClass(HIDE)
+                            reElem.find('input.layui-input').addClass(HIDE)
                         }
 
                         function renderListPanel(valueMap) {
