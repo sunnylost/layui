@@ -244,16 +244,18 @@ layui.define('layer', function(exports) {
                                                 /**
                                                  * TODO：增加同名隐藏 input 来模拟提交
                                                  */
-                                                if (hasMulti && value) {
-                                                    /**
-                                                     * 选中
-                                                     */
-                                                    if (!othis.hasClass(THIS)) {
-                                                        actionType = 'add'
-                                                    } else {
-                                                        actionType = 'remove'
+                                                if (hasMulti) {
+                                                    if (value) {
+                                                        /**
+                                                         * 选中
+                                                         */
+                                                        if (!othis.hasClass(THIS)) {
+                                                            actionType = 'add'
+                                                        } else {
+                                                            actionType = 'remove'
+                                                        }
+                                                        updateSelectValue(othis, actionType, value)
                                                     }
-                                                    updateSelectValue(othis, actionType, value)
                                                 } else {
                                                     if (othis.hasClass('layui-select-tips')) {
                                                         input.val('')
@@ -455,7 +457,7 @@ layui.define('layer', function(exports) {
                         if (typeof othis.attr('lay-ignore') === 'string') return othis.show()
 
                         if (hasDefaultVal) {
-                            let vals = value.split(',')
+                            let vals = String(value).split(',')
 
                             if (vals.length === 1) {
                                 selected = othis.find('option[value="' + value + '"]')
@@ -546,7 +548,7 @@ layui.define('layer', function(exports) {
                             cache[id].inputs = {}
                             cache[id].inputsLength = 0
 
-                            if (!cache[id].val) {
+                            if (!cache[id].val || !value) {
                                 cache[id].inputs = {}
                                 cache[id].inputsLength = 0
                                 cache[id].val = {}
@@ -574,10 +576,10 @@ layui.define('layer', function(exports) {
                                 }
                                 cache[id].inputsLength = valArr.length
                                 othis.attr('name', '')
-                            }
 
-                            reElem.find('div.layui-input').removeClass(HIDE)
-                            reElem.find('input.layui-input').addClass(HIDE)
+                                reElem.find('div.layui-input').removeClass(HIDE)
+                                reElem.find('input.layui-input').addClass(HIDE)
+                            }
                         }
 
                         function renderListPanel(valueMap) {
