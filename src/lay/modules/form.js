@@ -573,6 +573,7 @@ layui.define('layer', function(exports) {
                                     cache[id].val[item] = $tag
                                 }
                                 cache[id].inputsLength = valArr.length
+                                othis.attr('name', '')
                             }
 
                             reElem.find('div.layui-input').removeClass(HIDE)
