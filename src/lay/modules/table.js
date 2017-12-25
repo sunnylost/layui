@@ -1636,7 +1636,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             oldWidth = this.layMain.width(),
             offset = layMainTable.outerWidth() - oldWidth //表格内容器的超出宽度
 
-        if (offset === 0) {
+        /**
+         * table 可能不存在
+         */
+        if (!layMainTable.length || offset === 0) {
             return
         }
 
