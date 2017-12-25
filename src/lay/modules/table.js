@@ -1638,8 +1638,9 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         /**
          * table 可能不存在
+         * 数据可能为空
          */
-        if (!layMainTable.length || offset === 0) {
+        if (!layMainTable.length || !this.config.data.length || offset === 0) {
             return
         }
 
