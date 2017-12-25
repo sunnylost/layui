@@ -456,10 +456,16 @@ layui.define('layer', function(exports) {
 
                         if (typeof othis.attr('lay-ignore') === 'string') return othis.show()
 
+                        let hasMulti
+
+                        if (typeof othis.attr(MULTI) === 'string') {
+                            hasMulti = true
+                        }
+
                         if (hasDefaultVal) {
                             let vals = String(value).split(',')
 
-                            if (vals.length === 1) {
+                            if (vals.length === 1 && !hasMulti) {
                                 selected = othis.find('option[value="' + value + '"]')
                                 cache[id].val = {
                                     [value]: 1
@@ -478,12 +484,6 @@ layui.define('layer', function(exports) {
                             placeholder = optionsFirst
                                 ? optionsFirst.value ? TIPS : optionsFirst.innerHTML || TIPS
                                 : TIPS
-
-                        let hasMulti
-
-                        if (typeof othis.attr(MULTI) === 'string') {
-                            hasMulti = true
-                        }
 
                         //替代元素
                         let reElem
