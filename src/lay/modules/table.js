@@ -895,6 +895,9 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                             options.limit = obj.limit //更新每页条数
 
                             that.pullData(obj.curr, that.loading())
+                            setTimeout(() => {
+                                layui.event.call(that, MOD_NAME, 'reload(' + that.key + ')')
+                            }, 4)
                         }
                     }
                 },
