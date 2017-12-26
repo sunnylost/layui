@@ -501,7 +501,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             params[request.pageName] = curr
             params[request.limitName] = options.limit
 
-            $.ajax({
+            let opts = {
                 type: options.method || 'get',
                 url: options.url,
                 data: $.extend(params, options.where),
@@ -531,7 +531,21 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     that.renderForm()
                     loadIndex && layer.close(loadIndex)
                 }
-            })
+            }
+
+            if (options.contentType) {
+                opts.contentType = options.contentType
+            }
+
+            if (typeof options.processData !== 'undefined') {
+                opts.processData = options.processData
+
+                if (!opts.processData) {
+                    opts.data = JSON.stringify(opts.data)
+                }
+            }
+
+            $.ajax(opts)
         } else if (options.data && options.data.constructor === Array) {
             //已知数据
             let res = {},
@@ -1640,7 +1654,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
          * table 可能不存在
          * 数据可能为空
          */
-        if (!layMainTable.length || !this.config.data.length || offset === 0) {
+        if (!layMainTable.length || !this.config.data || !this.config.data.length || offset === 0) {
             return
         }
 
