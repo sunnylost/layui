@@ -1443,6 +1443,15 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     data: table.cache[that.key][index]
                 })
             })
+            .on('click', 'tr', function() {
+                let othis = $(this),
+                    index = othis.index()
+
+                layui.event.call(this, MOD_NAME, 'click(' + that.key + ')', {
+                    index,
+                    data: table.cache[that.key][index]
+                })
+            })
 
         //单元格编辑
         that.layBody

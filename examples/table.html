@@ -234,6 +234,10 @@ table.render({
   table.on('mouseenter(test)',function (obj) {
       console.log(obj)
   })
+
+    table.on('click(test)', function (obj) {
+        console.log(this,obj)
+    })
   
   //监听单元格编辑
   table.on('edit(test)', function(obj){
