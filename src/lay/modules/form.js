@@ -467,15 +467,23 @@ layui.define('layer', function(exports) {
 
                             if (vals.length === 1 && !hasMulti) {
                                 selected = othis.find('option[value="' + value + '"]')
-                                cache[id].val = {
-                                    [value]: 1
+
+                                if (selected.length) {
+                                    cache[id].val = {
+                                        [value]: 1
+                                    }
+                                    othis.val(value)
+                                } else {
+                                    value = ''
                                 }
-                                othis.val(value)
                             } else {
                                 let valObj = (cache[id].val = {})
                                 for (let i = 0; i < vals.length; i++) {
                                     let v = vals[i]
-                                    valObj[v] = 1
+
+                                    if (othis.find('option[value="' + v + '"]').length) {
+                                        valObj[v] = 1
+                                    }
                                 }
                             }
                         }
@@ -553,11 +561,19 @@ layui.define('layer', function(exports) {
                                 cache[id].inputsLength = 0
                                 cache[id].val = {}
                             } else {
+                                let addedNum = 0
                                 let valArr = value.split(',')
                                 let fieldName = othis.attr('name')
+
                                 for (let i = 0; i < valArr.length; i++) {
                                     let item = valArr[i]
-                                    let $opt = othis.find(`option[value="${item}"]`).clone()
+                                    let $oriOpt = othis.find(`option[value="${item}"]`)
+
+                                    if (!$oriOpt.length) {
+                                        continue
+                                    }
+
+                                    let $opt = $oriOpt.clone()
                                     $opt.children().remove()
                                     let val = $opt.html()
 
@@ -573,12 +589,20 @@ layui.define('layer', function(exports) {
                                     )
                                     reElem.find('div.layui-input').append($tag)
                                     cache[id].val[item] = $tag
+                                    addedNum++
                                 }
-                                cache[id].inputsLength = valArr.length
-                                othis.attr('name', '')
 
-                                reElem.find('div.layui-input').removeClass(HIDE)
-                                reElem.find('input.layui-input').addClass(HIDE)
+                                if (addedNum) {
+                                    cache[id].inputsLength = addedNum
+                                    othis.attr('name', '')
+
+                                    reElem.find('div.layui-input').removeClass(HIDE)
+                                    reElem.find('input.layui-input').addClass(HIDE)
+                                } else {
+                                    cache[id].inputs = {}
+                                    cache[id].inputsLength = 0
+                                    cache[id].val = {}
+                                }
                             }
                         }
 
