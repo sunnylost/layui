@@ -5,7 +5,7 @@
  @License：MIT
 
  */
-
+/* global $ */
 layui.define(function(exports) {
     'use strict'
 
@@ -21,7 +21,7 @@ layui.define(function(exports) {
             return new RegExp(str, 'g')
         },
         //匹配满足规则内容
-        query: function(type, _, __) {
+        query: function(type, _, __, config) {
             let types = [
                 '#([\\s\\S])+?', //js语句
                 '([^{#}])*?' //普通字段
@@ -44,8 +44,9 @@ layui.define(function(exports) {
     }
 
     let exp = tool.exp
-    let Tpl = function(tpl) {
+    let Tpl = function(tpl, opt) {
         this.tpl = tpl
+        this.config = $.extend({}, config, opt)
     }
 
     Tpl.pt = Tpl.prototype
@@ -55,6 +56,7 @@ layui.define(function(exports) {
     //编译模版
     Tpl.pt.parse = function(tpl) {
         let tplStr = tpl
+        let config = this.config
 
         if (cache[tplStr]) {
             return cache[tplStr]
@@ -81,13 +83,13 @@ layui.define(function(exports) {
             })
             //匹配JS规则内容
             .replace(/(?=['"])/g, '\\')
-            .replace(tool.query(), function(str) {
+            .replace(tool.query(null, null, null, config), function(str) {
                 str = str.replace(jss, '').replace(jsse, '')
                 return '";' + str.replace(/\\/g, '') + ';view+="'
             })
 
             //匹配普通字段
-            .replace(tool.query(1), function(str) {
+            .replace(tool.query(1, null, null, config), function(str) {
                 let start = '"+('
                 if (str.replace(/\s/g, '') === config.open + config.close) {
                     return ''
