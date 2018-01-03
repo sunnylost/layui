@@ -213,9 +213,13 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             obj[props[0]] = val
         } else {
             for (let i = 0; i < props.length - 1; i++) {
-                if (obj) {
-                    obj = obj[props[i]]
+                let key = props[i]
+
+                if (!obj[key]) {
+                    obj[key] = {}
                 }
+
+                obj = obj[key]
             }
 
             if (obj) {
@@ -495,7 +499,21 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         that.startTime = new Date().getTime() //渲染开始时间
 
-        if (options.url) {
+        if (options.data && options.data.constructor === Array) {
+            //已知数据
+            let res = {},
+                startLimit = curr * options.limit - options.limit
+
+            setProp(res, response.dataName, options.data.concat().splice(startLimit, options.limit))
+            setProp(res, response.countName, options.data.length)
+
+            that.renderData(res, curr, options.data.length)
+            sort()
+
+            if (typeof options.done === 'function') {
+                options.done(res, curr, getProp(res, response.countName))
+            }
+        } else if (options.url) {
             //Ajax请求
             let params = {}
             params[request.pageName] = curr
@@ -546,18 +564,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             }
 
             $.ajax(opts)
-        } else if (options.data && options.data.constructor === Array) {
-            //已知数据
-            let res = {},
-                startLimit = curr * options.limit - options.limit
-
-            setProp(res, response.dataName, options.data.concat().splice(startLimit, options.limit))
-            setProp(res, response.countName, options.data.length)
-
-            that.renderData(res, curr, options.data.length)
-            sort()
-            typeof options.done === 'function' &&
-                options.done(res, curr, getProp(res, response.countName))
         }
     }
 
