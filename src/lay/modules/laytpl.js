@@ -5,10 +5,10 @@
  @License：MIT
 
  */
-/* global $ */
-layui.define(function(exports) {
+layui.define('jquery', function(exports) {
     'use strict'
 
+    let $ = layui.jquery
     let config = {
         open: '{{',
         close: '}}'

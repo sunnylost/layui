@@ -245,15 +245,25 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //表格渲染
     Table.prototype.render = function() {
-        let that = this,
-            options = that.config
+        let that = this
+        let options = that.config
+        let globalCheck = options.globalCheck
 
         options.elem = $(options.elem)
         options.where = options.where || {}
         options.id = options.id || options.elem.attr('id')
+        options.checkedMap = {}
 
-        if (!options.checked) {
-            options.checked = [] //选中
+        let checked = options.checked
+        let checkedMap = options.checkedMap
+
+        if (!checked) {
+            checked = options.checked = [] //选中
+        }
+
+        for (let i = 0; i < checked.length; i++) {
+            let item = checked[i]
+            checkedMap[item[globalCheck]] = item
         }
 
         if (!options.expanded) {
@@ -754,6 +764,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                             '<input type="checkbox" name="layTableCheckbox" lay-skin="primary" ' +
                                             (function() {
                                                 let globalChecked = that.config.checked || []
+                                                let globalCheckedMap = that.config.checkedMap
                                                 let checkName = table.config.checkName
                                                 let key = that.config.globalCheck
 
@@ -761,17 +772,19 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                                 if (item3[checkName]) {
                                                     item1[checkName] = item3[checkName]
 
-                                                    if (item3[checkName]) {
-                                                        if (
-                                                            key &&
-                                                            globalChecked.indexOf(item3) === -1
-                                                        ) {
-                                                            globalChecked.push(tplData[key])
-                                                        }
-                                                        return 'checked'
-                                                    } else {
+                                                    if (!item3[checkName]) {
                                                         return ''
                                                     }
+
+                                                    if (
+                                                        key &&
+                                                        globalChecked.indexOf(item3) === -1
+                                                    ) {
+                                                        let k = tplData[key]
+                                                        globalChecked.push(k)
+                                                        globalCheckedMap[k] = tplData
+                                                    }
+                                                    return 'checked'
                                                 }
 
                                                 if (
@@ -1330,23 +1343,31 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
         /**
          *
-         * @param arr
-         * @param val
+         * @param arr 跨页勾选的数据
+         * @param data 当前行数据
+         * @param key globalCheck 值
          * @param checked 选中还是取消
+         * @param map 勾选数据的 map
          */
-        function updateArray(arr, val, checked) {
-            let index = arr.indexOf(val)
+        function updateArray(arr, data, key, checked, map) {
+            let id = data[key]
+            let index = arr.indexOf(id)
 
             if (checked) {
-                index === -1 && arr.push(val)
+                if (index === -1) {
+                    arr.push(id)
+                    map[id] = data
+                }
             } else {
                 arr.splice(index, 1)
+                delete map[id]
             }
         }
 
         //复选框选择
         that.elem.on('click', 'input[name="layTableCheckbox"]+', function() {
             let tableCheckArr = that.config.checked
+            let tableCheckMap = that.config.checkedMap
             let key = that.config.globalCheck
             let checkbox = $(this).prev(),
                 childs = that.layBody.find('input[name="layTableCheckbox"]'),
@@ -1379,10 +1400,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             if (key) {
                 if (isAll) {
                     layui.each(allData, function(i, v) {
-                        updateArray(tableCheckArr, v[key], checked)
+                        updateArray(tableCheckArr, v, key, checked, tableCheckMap)
                     })
                 } else {
-                    updateArray(tableCheckArr, data[key], checked)
+                    updateArray(tableCheckArr, data, key, checked, tableCheckMap)
                 }
             }
 
@@ -1726,11 +1747,25 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         this.scrollPatch()
     }
 
-    Table.prototype.getChecked = function() {
-        let nums = 0,
-            invalidNum = 0,
-            arr = [],
-            data = table.cache[this.key] || []
+    /**
+     *
+     * @param isAll 是否获得全局选中的数据
+     * @returns {{data: Array, isAll: boolean}}
+     */
+    Table.prototype.getChecked = function(isAll) {
+        let nums = 0
+        let invalidNum = 0
+        let arr = []
+        let instance = table.instances[this.key]
+        let data = table.cache[this.key] || []
+
+        if (isAll) {
+            return {
+                data: instance.checkedMap,
+                //TODO: 是否全选？
+                isAll: false
+            }
+        }
 
         //计算全选个数
         layui.each(data, function(i, item) {
