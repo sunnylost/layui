@@ -123,9 +123,9 @@ layui.define('jquery', function(exports) {
         callback(result)
     }
 
-    let laytpl = function(tpl) {
+    let laytpl = function(tpl, opt) {
         if (typeof tpl !== 'string') return tool.error('Template not found')
-        return new Tpl(tpl)
+        return new Tpl(tpl, opt)
     }
 
     laytpl.config = function(options) {
