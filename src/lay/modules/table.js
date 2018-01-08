@@ -812,9 +812,13 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                     }
 
                                     if (item3.templet) {
-                                        return laytpl(
-                                            $(item3.templet).html() || String(content)
-                                        ).render(tplData)
+                                        if (typeof item3.templet === 'function') {
+                                            return item3.templet(tplData)
+                                        } else {
+                                            return laytpl(
+                                                $(item3.templet).html() || String(content)
+                                            ).render(tplData)
+                                        }
                                     } else {
                                         return content
                                     }

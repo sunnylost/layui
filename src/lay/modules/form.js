@@ -793,7 +793,6 @@ layui.define('layer', function(exports) {
 
                     radios.each(function(index, radio) {
                         let othis = $(this),
-                            hasRender = othis.next('.' + CLASS),
                             disabled = this.disabled
 
                         if (typeof othis.attr('lay-ignore') === 'string') return othis.show()
@@ -809,12 +808,20 @@ layui.define('layer', function(exports) {
                                 '<i class="layui-anim layui-icon">' +
                                     ICON[radio.checked ? 0 : 1] +
                                     '</i>',
-                                '<span>' + (radio.title || '') + '</span>',
+                                '<div>' +
+                                    (function() {
+                                        let title = radio.title || ''
+                                        if (typeof othis.next().attr('lay-radio') === 'string') {
+                                            title = othis.next().html()
+                                            othis.next().remove()
+                                        }
+                                        return title
+                                    })() +
+                                    '</div>',
                                 '</div>'
                             ].join('')
                         )
 
-                        hasRender[0] && hasRender.remove() //如果已经渲染，则Rerender
                         othis.after(reElem)
                         events.call(this, reElem)
                     })
@@ -955,6 +962,7 @@ layui.define('layer', function(exports) {
 
     let toString = Object.prototype.toString
     let hasOwn = Object.prototype.hasOwnProperty
+
     function isArray(arr) {
         return toString.call(arr) === '[object Array]'
     }

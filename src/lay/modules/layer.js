@@ -1299,12 +1299,7 @@
         let prompt, content
 
         if (options.formType === 2) {
-            content =
-                '<textarea class="layui-layer-input"' +
-                style +
-                '>' +
-                (options.value || '') +
-                '</textarea>'
+            content = '<textarea class="layui-layer-input"' + style + '></textarea>'
         } else {
             content =
                 '<input type="' +
@@ -1327,7 +1322,7 @@
                     maxWidth: $win.width(),
                     success: function(layero) {
                         prompt = layero.find('.layui-layer-input')
-                        prompt.focus()
+                        prompt.val(options.value || '').focus()
                         typeof success === 'function' && success(layero)
                     },
                     resize: false,
