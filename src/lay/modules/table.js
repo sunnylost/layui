@@ -893,6 +893,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             that.layFixed.remove()
             that.layMain.find('tbody').html('')
             that.layMain.find('.' + NONE).remove()
+            that.layPage.hide()
             return that.layMain.append('<div class="' + NONE + '">无数据</div>')
         }
 
