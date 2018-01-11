@@ -647,6 +647,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 }
 
                 let cellSpan = options.cellSpan || BLANK_FN
+                /**
+                 * 默认展示斑马线
+                 */
+                let stripe = typeof options.stripe === 'undefined' ? true : options.stripe
 
                 layui.each(data, function(i1, item1) {
                     let tds = [],
@@ -831,7 +835,14 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                         if (item3.fixed === 'right') tds_fixed_r.push(td)
                     })
 
-                    let trClass = i1 % 2 ? 'layui-tr-odd' : 'layui-tr-even'
+                    let trClass
+
+                    if (stripe) {
+                        trClass = i1 % 2 ? 'layui-tr-odd' : 'layui-tr-even'
+                    } else {
+                        trClass = ''
+                    }
+
                     trs.push(
                         '<tr data-index="' +
                             i1 +
@@ -844,7 +855,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     trs_fixed.push(
                         '<tr data-index="' +
                             i1 +
-                            '"class="' +
+                            '" class="' +
                             trClass +
                             '">' +
                             tds_fixed.join('') +
@@ -1819,7 +1830,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         } else {
             $tr.addClass(ROW_EXPANDED)
             $el.html('&#xe61a') //down
-            $tr.after(`<tr><td colspan="${this.config.cols[0].length}">${html}</td></tr>`)
+            $tr.after(
+                `<tr class="layui-table-expand-tr"><td colspan="${
+                    this.config.cols[0].length
+                }">${html}</td></tr>`
+            )
             isExpand = true
         }
 
