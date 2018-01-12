@@ -445,7 +445,7 @@ layui.define('layer', function(exports) {
                     }
 
                     function hasValue(v) {
-                        return isUndefined(v) && v !== ''
+                        return !isUndefined(v) && v !== ''
                     }
 
                     selects.each(function(index, select) {
