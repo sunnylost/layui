@@ -440,12 +440,21 @@ layui.define('layer', function(exports) {
                         selects = selects.filter(`[lay-filter="${elFilter}"]`)
                     }
 
+                    function isUndefined(v) {
+                        return typeof v === 'undefined'
+                    }
+
+                    function hasValue(v) {
+                        return isUndefined(v) && v !== ''
+                    }
+
                     selects.each(function(index, select) {
                         let othis = $(this),
                             hasRender = othis.next('.' + CLASS),
                             disabled = this.disabled,
-                            value = othis.data('value') || select.value,
-                            hasDefaultVal = typeof value !== 'undefined',
+                            dataValue = othis.data('value'),
+                            value = isUndefined(dataValue) ? select.value : dataValue,
+                            hasDefaultVal = hasValue(value),
                             selected = $(select.options[select.selectedIndex]), //获取当前选中项
                             optionsFirst = select.options[0]
 
@@ -509,7 +518,7 @@ layui.define('layer', function(exports) {
                                         '<input type="text" placeholder="' +
                                         placeholder +
                                         '" value="' +
-                                        (value ? selected.html() : '') +
+                                        (hasValue(value) ? selected.html() : '') +
                                         '" readonly' +
                                         ' class="layui-input layui-unselect' +
                                         (disabled ? ' ' + DISABLED : '') +
@@ -532,7 +541,7 @@ layui.define('layer', function(exports) {
                                         '"><input type="text" placeholder="' +
                                         placeholder +
                                         '" value="' +
-                                        (value ? selected.html() : '') +
+                                        (hasValue(value) ? selected.html() : '') +
                                         '" ' +
                                         (isSearch ? '' : 'readonly') +
                                         ' class="layui-input' +
