@@ -766,7 +766,7 @@ layui.define('layer', function(exports) {
                                     forms = radio.parents(ELEM)
                                 let filter = radio.attr('lay-filter') //获取过滤器
                                 let sameRadio = forms.find(
-                                    'input[name=' + name.replace(/[.#[\]]/g, '\\$1') + ']'
+                                    'input[name=' + name.replace(/([.#[\]])/g, '\\$1') + ']'
                                 ) //找到相同name的兄弟
 
                                 if (radio[0].disabled) return
