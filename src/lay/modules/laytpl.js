@@ -99,7 +99,13 @@ layui.define('jquery', function(exports) {
                     str = str.replace(/^=/, '')
                     start = '"+_escape_('
                 }
-                return start + str.replace(/\\/g, '') + ')+"'
+                str = str.replace(/\\/g, '')
+
+                /**
+                 * 如果 str 结果为 undefined，那么返回空字符串
+                 */
+                str = `(${str}) == null ? '' : ${str}`
+                return start + str + ')+"'
             })
         tpl = '"use strict";var view = "' + tpl + '";return view;'
 
