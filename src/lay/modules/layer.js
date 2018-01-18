@@ -419,7 +419,7 @@
             config = this.config,
             times = this.index,
             content = config.content,
-            conType = typeof content === 'object',
+            conType = content !== null && typeof content === 'object',
             body = $('body')
 
         if (config.id && $('#' + config.id)[0]) return
