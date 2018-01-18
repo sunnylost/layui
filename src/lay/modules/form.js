@@ -455,8 +455,17 @@ layui.define('layer', function(exports) {
                             dataValue = othis.data('value'),
                             value = isUndefined(dataValue) ? select.value : dataValue,
                             hasDefaultVal = hasValue(value),
-                            selected = $(select.options[select.selectedIndex]), //获取当前选中项
+                            selected, //获取当前选中项
                             optionsFirst = select.options[0]
+
+                        /**
+                         * select.options 不是数组，获取不存在的属性会抛出异常
+                         */
+                        if (select.selectedIndex === -1) {
+                            selected = $({})
+                        } else {
+                            selected = $(select.options[select.selectedIndex])
+                        }
 
                         let id = uuid++
                         othis.data('uuid', id)
@@ -518,7 +527,7 @@ layui.define('layer', function(exports) {
                                         '<input type="text" placeholder="' +
                                         placeholder +
                                         '" value="' +
-                                        (hasValue(value) ? selected.html() : '') +
+                                        (hasValue(value) ? selected.html() || '' : '') +
                                         '" readonly' +
                                         ' class="layui-input layui-unselect' +
                                         (disabled ? ' ' + DISABLED : '') +
@@ -541,7 +550,7 @@ layui.define('layer', function(exports) {
                                         '"><input type="text" placeholder="' +
                                         placeholder +
                                         '" value="' +
-                                        (hasValue(value) ? selected.html() : '') +
+                                        (hasValue(value) ? selected.html() || '' : '') +
                                         '" ' +
                                         (isSearch ? '' : 'readonly') +
                                         ' class="layui-input' +
