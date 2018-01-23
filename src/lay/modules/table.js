@@ -56,7 +56,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             }
         },
         //thead区域模板
-        TPL_HEADER = function(options) {
+        tplHeader = function(options) {
             options = options || {}
 
             let rowCols =
@@ -114,14 +114,14 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             ].join('')
         },
         //tbody区域模板
-        TPL_BODY = [
+        tplBody = [
             '<table cellspacing="0" cellpadding="0" border="0" class="layui-table" ',
             '{{# if(d.data.skin){ }}lay-skin="{{d.data.skin}}"{{# } }} {{# if(d.data.size){ }}lay-size="{{d.data.size}}"{{# } }} {{# if(d.data.even){ }}lay-even{{# } }}>',
             '<tbody></tbody>',
             '</table>'
         ].join(''),
         //主模板
-        TPL_MAIN = [
+        tplMain = [
             '<div class="layui-form layui-border-box {{d.VIEW_CLASS}}" lay-filter="LAY-table-{{d.index}}" style="{{# if(d.data.width){ }}width:{{d.data.width}}px;{{# } }} {{# if(d.data.height){ }}height:{{d.data.height}}px;{{# } }}">',
 
             '{{# if(d.data.toolbar){ }}',
@@ -131,19 +131,19 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             '<div class="layui-table-box">',
             '{{# var left, right; }}',
             '<div class="layui-table-header">',
-            TPL_HEADER(),
+            tplHeader(),
             '</div>',
             '<div class="layui-table-body layui-table-main">',
-            TPL_BODY,
+            tplBody,
             '</div>',
 
             '{{# if(left){ }}',
             '<div class="layui-table-fixed layui-table-fixed-l">',
             '<div class="layui-table-header">',
-            TPL_HEADER({ fixed: true }),
+            tplHeader({ fixed: true }),
             '</div>',
             '<div class="layui-table-body">',
-            TPL_BODY,
+            tplBody,
             '</div>',
             '</div>',
             '{{# }; }}',
@@ -151,11 +151,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             '{{# if(right){ }}',
             '<div class="layui-table-fixed layui-table-fixed-r">',
             '<div class="layui-table-header">',
-            TPL_HEADER({ fixed: 'right' }),
+            tplHeader({ fixed: 'right' }),
             '<div class="layui-table-mend"></div>',
             '</div>',
             '<div class="layui-table-body">',
-            TPL_BODY,
+            tplBody,
             '</div>',
             '</div>',
             '{{# }; }}',
@@ -319,7 +319,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             hasRender = othis.next('.' + ELEM_VIEW),
             //主容器
             reElem = (that.elem = $(
-                laytpl(TPL_MAIN).render({
+                laytpl(tplMain).render({
                     VIEW_CLASS: ELEM_VIEW,
                     data: options,
                     index: that.index //索引
@@ -535,9 +535,12 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 data: $.extend(params, options.where),
                 dataType: 'json',
                 success: function(res) {
-                    if (getProp(res, response.statusName) != response.statusCode) {
+                    if (getProp(res, response.statusName) !== response.statusCode) {
                         that.renderForm()
                         that.layPage.hide()
+                        if (typeof options.error === 'function') {
+                            options.error(res)
+                        }
                         return that.layMain.html(
                             '<div class="' +
                                 NONE +
@@ -554,10 +557,13 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     typeof options.done === 'function' &&
                         options.done(res, curr, getProp(res, response.countName))
                 },
-                error: function() {
+                error: function(res) {
                     that.layMain.html('<div class="' + NONE + '">数据接口请求异常</div>')
                     that.renderForm()
                     loadIndex && layer.close(loadIndex)
+                    if (typeof options.error === 'function') {
+                        options.error(res)
+                    }
                 }
             }
 
@@ -638,258 +644,245 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             data = getProp(res, options.response.dataName) || [],
             trs = [],
             trs_fixed = [],
-            trs_fixed_r = [],
-            //渲染视图
-            render = function() {
-                //后续性能提升的重点
-                if (!sort && that.sortKey) {
-                    return that.sort(that.sortKey.field, that.sortKey.sort, true)
+            trs_fixed_r = []
+        //渲染视图
+        function render() {
+            //后续性能提升的重点
+            if (!sort && that.sortKey) {
+                return that.sort(that.sortKey.field, that.sortKey.sort, true)
+            }
+
+            let cellSpan = options.cellSpan || BLANK_FN
+            /**
+             * 默认展示斑马线
+             */
+            let stripe = typeof options.stripe === 'undefined' ? true : options.stripe
+
+            layui.each(data, function(i1, item1) {
+                let tds = [],
+                    tds_fixed = [],
+                    tds_fixed_r = [],
+                    numbers = i1 + options.limit * (curr - 1) + 1 //序号
+
+                if (item1.length === 0) return
+                if (!sort) {
+                    item1[table.config.indexName] = i1
                 }
 
-                let cellSpan = options.cellSpan || BLANK_FN
-                /**
-                 * 默认展示斑马线
-                 */
-                let stripe = typeof options.stripe === 'undefined' ? true : options.stripe
+                that.eachCols(function(i3, item3) {
+                    let field = item3.field || i3,
+                        content = item1[field]
 
-                layui.each(data, function(i1, item1) {
-                    let tds = [],
-                        tds_fixed = [],
-                        tds_fixed_r = [],
-                        numbers = i1 + options.limit * (curr - 1) + 1 //序号
+                    if (content === undefined || content === null) content = ''
+                    if (item3.colspan > 1) return
 
-                    if (item1.length === 0) return
-                    if (!sort) {
-                        item1[table.config.indexName] = i1
+                    let span = getSpan(cellSpan, item1, item3, i1, i3)
+
+                    if (!span.rowspan || !span.colspan) {
+                        return
                     }
 
-                    that.eachCols(function(i3, item3) {
-                        let field = item3.field || i3,
-                            content = item1[field]
+                    let colspan = ''
+                    let rowspan = ''
 
-                        if (content === undefined || content === null) content = ''
-                        if (item3.colspan > 1) return
+                    if (span.colspan !== 1) {
+                        colspan = 'colspan=' + span.colspan
+                    }
 
-                        let span = getSpan(cellSpan, item1, item3, i1, i3)
+                    if (span.rowspan !== 1) {
+                        rowspan = 'rowspan=' + span.rowspan
+                    }
 
-                        if (!span.rowspan || !span.colspan) {
-                            return
-                        }
+                    let attr = []
+                    let classes = []
 
-                        let colspan = ''
-                        let rowspan = ''
+                    if (item3.hide) {
+                        //是否允许单元格编辑
+                        classes.push('layui-hide')
+                    }
 
-                        if (span.colspan !== 1) {
-                            colspan = 'colspan=' + span.colspan
-                        }
+                    if (item3.classes) {
+                        classes.push(item3.classes)
+                    }
 
-                        if (span.rowspan !== 1) {
-                            rowspan = 'rowspan=' + span.rowspan
-                        }
+                    if (item3.edit) {
+                        //是否允许单元格编辑
+                        attr.push('data-edit="' + item3.edit + '"')
+                    }
 
-                        let attr = []
-                        let classes = []
+                    if (item3.align) {
+                        //对齐方式
+                        attr.push('align="' + item3.align + '"')
+                    }
 
-                        if (item3.hide) {
-                            //是否允许单元格编辑
-                            classes.push('layui-hide')
-                        }
+                    if (item3.templet) {
+                        //自定义模板
+                        attr.push('data-content="' + content + '"')
+                    }
 
-                        if (item3.classes) {
-                            classes.push(item3.classes)
-                        }
+                    if (item3.toolbar) {
+                        //自定义模板
+                        attr.push('data-off="true"')
+                    }
 
-                        if (item3.edit) {
-                            //是否允许单元格编辑
-                            attr.push('data-edit="' + item3.edit + '"')
-                        }
+                    if (item3.event) {
+                        //自定义事件
+                        attr.push('lay-event="' + item3.event + '"')
+                    }
 
-                        if (item3.align) {
-                            //对齐方式
-                            attr.push('align="' + item3.align + '"')
-                        }
+                    if (item3.style) {
+                        //自定义样式
+                        attr.push('style="' + item3.style + '"')
+                    }
 
-                        if (item3.templet) {
-                            //自定义模板
-                            attr.push('data-content="' + content + '"')
-                        }
+                    if (item3.minWidth) {
+                        //单元格最小宽度
+                        attr.push('data-minwidth="' + item3.minWidth + '"')
+                    }
 
-                        if (item3.toolbar) {
-                            //自定义模板
-                            attr.push('data-off="true"')
-                        }
+                    if (classes.length) {
+                        attr.push('class="' + classes.join(' ') + '"')
+                    }
 
-                        if (item3.event) {
-                            //自定义事件
-                            attr.push('lay-event="' + item3.event + '"')
-                        }
+                    //返回对应的CSS类标识
+                    let str = 'layui-table-cell laytable-cell-' + options.index + '-' + field
+                    let tdClasses =
+                        item3.type === 'normal' ? str : str + ' laytable-cell-' + item3.type
 
-                        if (item3.style) {
-                            //自定义样式
-                            attr.push('style="' + item3.style + '"')
-                        }
+                    //td内容
+                    let td = [
+                        '<td data-field="' + field + '" ' + attr.join(' '),
+                        colspan,
+                        rowspan,
+                        '>',
+                        '<div class="' +
+                            tdClasses +
+                            '">' +
+                            (function() {
+                                let tplData = $.extend(
+                                    true,
+                                    {
+                                        LAY_INDEX: numbers
+                                    },
+                                    item1
+                                )
 
-                        if (item3.minWidth) {
-                            //单元格最小宽度
-                            attr.push('data-minwidth="' + item3.minWidth + '"')
-                        }
+                                //渲染复选框列视图
+                                if (item3.type === 'checkbox') {
+                                    return (
+                                        '<input type="checkbox" name="layTableCheckbox" lay-skin="primary" ' +
+                                        (function() {
+                                            let globalChecked = that.config.checked || []
+                                            let globalCheckedMap = that.config.checkedMap
+                                            let checkName = table.config.checkName
+                                            let key = that.config.globalCheck
 
-                        if (classes.length) {
-                            attr.push('class="' + classes.join(' ') + '"')
-                        }
+                                            //如果是全选
+                                            if (item3[checkName]) {
+                                                item1[checkName] = item3[checkName]
 
-                        //td内容
-                        let td = [
-                            '<td data-field="' + field + '" ' + attr.join(' '),
-                            colspan,
-                            rowspan,
-                            '>',
-                            '<div class="layui-table-cell laytable-cell-' +
-                                (function() {
-                                    //返回对应的CSS类标识
-                                    let str = options.index + '-' + field
-                                    return item3.type === 'normal'
-                                        ? str
-                                        : str + ' laytable-cell-' + item3.type
-                                })() +
-                                '">' +
-                                (function() {
-                                    let tplData = $.extend(
-                                        true,
-                                        {
-                                            LAY_INDEX: numbers
-                                        },
-                                        item1
+                                                if (!item3[checkName]) {
+                                                    return ''
+                                                }
+
+                                                if (key && globalChecked.indexOf(item3) === -1) {
+                                                    let k = tplData[key]
+                                                    globalChecked.push(k)
+                                                    globalCheckedMap[k] = tplData
+                                                }
+                                                return 'checked'
+                                            }
+
+                                            if (key && globalChecked.indexOf(tplData[key]) !== -1) {
+                                                return 'checked'
+                                            }
+
+                                            return tplData[checkName] ? 'checked' : ''
+                                        })() +
+                                        '>'
                                     )
+                                } else if (item3.type === 'numbers') {
+                                    //渲染序号
+                                    return numbers
+                                } else if (item3.type === 'expand') {
+                                    //渲染展开按钮
+                                    return '<i class="layui-icon layui-table-expand" name="layTableExpand" lay-filter="layTableExpandCurrentRow">&#xe602;</i>'
+                                }
 
-                                    //渲染复选框列视图
-                                    if (item3.type === 'checkbox') {
-                                        return (
-                                            '<input type="checkbox" name="layTableCheckbox" lay-skin="primary" ' +
-                                            (function() {
-                                                let globalChecked = that.config.checked || []
-                                                let globalCheckedMap = that.config.checkedMap
-                                                let checkName = table.config.checkName
-                                                let key = that.config.globalCheck
+                                //解析工具列模板
+                                if (item3.toolbar) {
+                                    return laytpl($(item3.toolbar).html() || '').render(tplData)
+                                }
 
-                                                //如果是全选
-                                                if (item3[checkName]) {
-                                                    item1[checkName] = item3[checkName]
-
-                                                    if (!item3[checkName]) {
-                                                        return ''
-                                                    }
-
-                                                    if (
-                                                        key &&
-                                                        globalChecked.indexOf(item3) === -1
-                                                    ) {
-                                                        let k = tplData[key]
-                                                        globalChecked.push(k)
-                                                        globalCheckedMap[k] = tplData
-                                                    }
-                                                    return 'checked'
-                                                }
-
-                                                if (
-                                                    key &&
-                                                    globalChecked.indexOf(tplData[key]) !== -1
-                                                ) {
-                                                    return 'checked'
-                                                }
-
-                                                return tplData[checkName] ? 'checked' : ''
-                                            })() +
-                                            '>'
-                                        )
-                                    } else if (item3.type === 'numbers') {
-                                        //渲染序号
-                                        return numbers
-                                    } else if (item3.type === 'expand') {
-                                        //渲染展开按钮
-                                        return '<i class="layui-icon layui-table-expand" name="layTableExpand" lay-filter="layTableExpandCurrentRow">&#xe602;</i>'
-                                    }
-
-                                    //解析工具列模板
-                                    if (item3.toolbar) {
-                                        return laytpl($(item3.toolbar).html() || '').render(tplData)
-                                    }
-
-                                    if (item3.templet) {
-                                        if (typeof item3.templet === 'function') {
-                                            return item3.templet(tplData)
-                                        } else {
-                                            return laytpl(
-                                                $(item3.templet).html() || String(content)
-                                            ).render(tplData)
-                                        }
+                                if (item3.templet) {
+                                    if (typeof item3.templet === 'function') {
+                                        return item3.templet(tplData)
                                     } else {
-                                        return content
+                                        return laytpl(
+                                            $(item3.templet).html() || String(content)
+                                        ).render(tplData)
                                     }
-                                })(),
-                            '</div></td>'
-                        ].join('')
+                                } else {
+                                    return content
+                                }
+                            })(),
+                        '</div></td>'
+                    ].join('')
 
-                        tds.push(td)
-                        if (item3.fixed && item3.fixed !== 'right') tds_fixed.push(td)
-                        if (item3.fixed === 'right') tds_fixed_r.push(td)
-                    })
-
-                    let trClass
-
-                    if (stripe) {
-                        trClass = i1 % 2 ? 'layui-tr-odd' : 'layui-tr-even'
-                    } else {
-                        trClass = ''
-                    }
-
-                    trs.push(
-                        '<tr data-index="' +
-                            i1 +
-                            '" class="' +
-                            trClass +
-                            '">' +
-                            tds.join('') +
-                            '</tr>'
-                    )
-                    trs_fixed.push(
-                        '<tr data-index="' +
-                            i1 +
-                            '" class="' +
-                            trClass +
-                            '">' +
-                            tds_fixed.join('') +
-                            '</tr>'
-                    )
-                    trs_fixed_r.push(
-                        '<tr data-index="' +
-                            i1 +
-                            '" class="' +
-                            trClass +
-                            '">' +
-                            tds_fixed_r.join('') +
-                            '</tr>'
-                    )
+                    tds.push(td)
+                    if (item3.fixed && item3.fixed !== 'right') tds_fixed.push(td)
+                    if (item3.fixed === 'right') tds_fixed_r.push(td)
                 })
 
-                that.layBody.scrollTop(0)
-                that.layMain.find('.' + NONE).remove()
-                that.layMain.find('tbody').html(trs.join(''))
-                that.layFixLeft.find('tbody').html(trs_fixed.join(''))
-                that.layFixRight.find('tbody').html(trs_fixed_r.join(''))
+                let trClass
 
-                that.renderForm()
-                that.syncCheckAll()
-                if (that.haveInit) {
-                    that.scrollPatch()
+                if (stripe) {
+                    trClass = i1 % 2 ? 'layui-tr-odd' : 'layui-tr-even'
                 } else {
-                    setTimeout(function() {
-                        that.scrollPatch()
-                    }, 50)
+                    trClass = ''
                 }
-                that.haveInit = true
-                layer.close(that.tipsIndex)
+
+                trs.push(
+                    '<tr data-index="' + i1 + '" class="' + trClass + '">' + tds.join('') + '</tr>'
+                )
+                trs_fixed.push(
+                    '<tr data-index="' +
+                        i1 +
+                        '" class="' +
+                        trClass +
+                        '">' +
+                        tds_fixed.join('') +
+                        '</tr>'
+                )
+                trs_fixed_r.push(
+                    '<tr data-index="' +
+                        i1 +
+                        '" class="' +
+                        trClass +
+                        '">' +
+                        tds_fixed_r.join('') +
+                        '</tr>'
+                )
+            })
+
+            that.layBody.scrollTop(0)
+            that.layMain.find('.' + NONE).remove()
+            that.layMain.find('tbody').html(trs.join(''))
+            that.layFixLeft.find('tbody').html(trs_fixed.join(''))
+            that.layFixRight.find('tbody').html(trs_fixed_r.join(''))
+
+            that.renderForm()
+            that.syncCheckAll()
+            if (that.haveInit) {
+                that.scrollPatch()
+            } else {
+                setTimeout(function() {
+                    that.scrollPatch()
+                }, 50)
             }
+            that.haveInit = true
+            layer.close(that.tipsIndex)
+        }
 
         that.key = options.id || options.index
         table.cache[that.key] = data //记录数据
@@ -1061,7 +1054,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     /**
      * 同步全选按钮状态
-     * 可能会有多列存在 checkbox
      */
     Table.prototype.syncCheckAll = function() {
         let that = this,
@@ -1940,7 +1932,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             invalidNum = 0,
             arr = [],
             data = table.cache[id]
-        if (!data) return {}
+        if (!data || !data.length) return {}
         //计算全选个数
         layui.each(data, function(i, item) {
             if (item.constructor === Array) {
