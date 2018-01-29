@@ -751,13 +751,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
                     //td内容
                     let td = [
-                        '<td data-field="' + field + '" ' + attr.join(' '),
+                        `<td data-field="${field}" ${attr.join(' ')}`,
                         colspan,
                         rowspan,
                         '>',
-                        '<div class="' +
-                            tdClasses +
-                            '">' +
+                        `<div class="${tdClasses}" title="${content}">` +
                             (function() {
                                 let tplData = $.extend(
                                     true,
