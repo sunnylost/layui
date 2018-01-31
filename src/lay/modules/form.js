@@ -105,7 +105,7 @@ layui.define('layer', function(exports) {
                         },
                         events = function(reElem, disabled, isSearch) {
                             let select = $(this)
-                            let fieldName = select.attr('name')
+                            let fieldName = select.attr('name') || select.attr('_name')
                             let title = reElem.find('.' + TITLE)
                             let input = title.find('input')
                             let dl
@@ -160,6 +160,8 @@ layui.define('layer', function(exports) {
                                     delete cacheObj.val[value]
                                     cacheObj.inputsLength--
                                 }
+
+                                select.attr('_name', fieldName)
 
                                 if (cacheObj.inputsLength) {
                                     $div.removeClass(HIDE)
@@ -458,6 +460,8 @@ layui.define('layer', function(exports) {
                             selected, //获取当前选中项
                             optionsFirst = select.options[0]
 
+                        othis.attr('_name', othis.attr('name') || othis.attr('_name'))
+
                         /**
                          * select.options 不是数组，获取不存在的属性会抛出异常
                          */
@@ -581,7 +585,7 @@ layui.define('layer', function(exports) {
                             } else {
                                 let addedNum = 0
                                 let valArr = value.split(',')
-                                let fieldName = othis.attr('name')
+                                let fieldName = othis.attr('name') || othis.attr('_name')
 
                                 for (let i = 0; i < valArr.length; i++) {
                                     let item = valArr[i]
