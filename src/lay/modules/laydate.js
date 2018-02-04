@@ -848,7 +848,7 @@
     Class.prototype.remove = function(prev) {
         let elem = lay('#' + (prev || this.elemID))
 
-        if (!elem.hasClass(ELEM_STATIC)) {
+        if (!elem.hasClass(ELEM_STATIC) && elem.length) {
             this.checkDate(function() {
                 elem.remove()
             })
