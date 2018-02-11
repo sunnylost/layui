@@ -33,7 +33,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         layer = layui.layer,
         form = layui.form,
         hint = layui.hint(),
-        device = layui.device(),
         //外部接口
         table = {
             config: {
@@ -1556,47 +1555,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     othis.find('.' + ELEM_EDIT)[0] || othis.append(input)
                     input.focus()
                 }
-                return
-            }
-
-            //如果出现省略，则可查看更多
-            if (elemCell.find('.layui-form-switch,.layui-form-checkbox')[0]) return //限制不出现更多（暂时）
-
-            if (Math.round(elemCell.prop('scrollWidth')) > Math.round(elemCell.outerWidth())) {
-                that.tipsIndex = layer.tips(
-                    [
-                        '<div class="layui-table-tips-main" style="margin-top: -' +
-                            (elemCell.height() + 16) +
-                            'px;' +
-                            (function() {
-                                if (options.size === 'sm') {
-                                    return 'padding: 4px 15px; font-size: 12px;'
-                                }
-                                if (options.size === 'lg') {
-                                    return 'padding: 14px 15px;'
-                                }
-                                return ''
-                            })() +
-                            '">',
-                        elemCell.html(),
-                        '</div>',
-                        '<i class="layui-icon layui-table-tips-c">&#x1006;</i>'
-                    ].join(''),
-                    elemCell[0],
-                    {
-                        tips: [3, ''],
-                        time: -1,
-                        anim: -1,
-                        maxWidth: device.ios || device.android ? 300 : 600,
-                        isOutAnim: false,
-                        skin: 'layui-table-tips',
-                        success: function(layero, index) {
-                            layero.find('.layui-table-tips-c').on('click', function() {
-                                layer.close(index)
-                            })
-                        }
-                    }
-                )
             }
         })
 
@@ -1810,7 +1768,17 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             }
         })
 
-        html = templet ? laytpl($(templet).html() || this.value).render(tableData[index]) : ''
+        let rowData = tableData[index]
+
+        if (templet) {
+            if (typeof templet === 'function') {
+                html = templet(rowData)
+            } else {
+                html = laytpl($(templet).html() || this.value).render(rowData)
+            }
+        } else {
+            html = ''
+        }
 
         if ($tr.hasClass(ROW_EXPANDED)) {
             $tr.removeClass(ROW_EXPANDED)
