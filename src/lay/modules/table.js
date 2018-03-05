@@ -170,7 +170,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             '{{# layui.each(d.data.cols, function(i1, item1){',
             'layui.each(item1, function(i2, item2){ }}',
             '.laytable-cell-{{d.index}}-{{item2.field||i2}}{ ',
-            '{{# if(item2.width){ }}',
+            '{{# if(typeof item2.width === "number"){ }}',
             'width: {{item2.width}}px;',
             '{{# } }}',
             ' }',
@@ -386,6 +386,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             item.unresize = true
             item.width = item.width || initWidth[item.type]
         }
+
+        if (item.hide) {
+            item.width = 0
+        }
     }
 
     //动态分配列宽高
@@ -445,7 +449,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
                 if (/\d+%$/.test(width)) {
                     item2.width = width = Math.floor(parseFloat(width) / 100 * cntrWidth)
-                } else if (!width) {
+                } else if (!width && !item2.hide) {
                     //列宽未填写
                     item2.width = width = 0
                     autoColNums++
@@ -466,7 +470,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             layui.each(item1, function(i2, item2) {
                 let minWidth = item2.minWidth || options.cellMinWidth
                 if (item2.colspan > 1) return
-                if (item2.width === 0) {
+                if (item2.width === 0 && !item2.hide) {
                     item2.width = Math.floor(autoWidth >= minWidth ? autoWidth : minWidth) //不能低于设定的最小宽度
                 }
             })
@@ -1646,7 +1650,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     }
 
     Table.prototype.resizeColumn = function() {
-        let cellMinWidth = this.config.cellMinWidth,
+        let data = table.cache[this.config.id],
+            cellMinWidth = this.config.cellMinWidth,
             cols = this.resizedColumn,
             colsNum = cols.length,
             layMainTable = this.layMain.children('table'),
@@ -1657,7 +1662,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
          * table 可能不存在
          * 数据可能为空
          */
-        if (!layMainTable.length || !this.config.data || !this.config.data.length || offset === 0) {
+        if (!layMainTable.length || !data || !data.length || offset === 0) {
             return
         }
 
