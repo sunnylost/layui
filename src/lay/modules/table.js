@@ -246,23 +246,16 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
     Table.prototype.render = function() {
         let that = this
         let options = that.config
-        let globalCheck = options.globalCheck
 
         options.elem = $(options.elem)
         options.where = options.where || {}
         options.id = options.id || options.elem.attr('id')
-        options.checkedMap = {}
 
         let checked = options.checked
-        let checkedMap = options.checkedMap
 
         if (!checked) {
-            checked = options.checked = [] //选中
-        }
-
-        for (let i = 0; i < checked.length; i++) {
-            let item = checked[i]
-            checkedMap[item[globalCheck]] = item
+            options.checkedMap = {}
+            options.checked = [] //选中
         }
 
         if (!options.expanded) {
@@ -640,6 +633,28 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         }
     }
 
+    function syncGlobalCheckedData(data, tableInstance) {
+        let config = tableInstance.config || {}
+        let key = config.globalCheck
+        let checkName = table.config.checkName
+        let checkedArr = config.checked
+        let checkedMap = config.checkedMap || {}
+
+        if (!data || !data.length || !checkedArr || !checkedArr.length) {
+            return
+        }
+
+        for (let i = 0; i < data.length; i++) {
+            let item = data[i] || {}
+            let id = item[key]
+
+            if (id && checkedArr.indexOf(id) !== -1 && checkedMap[id]) {
+                item[checkName] = checkedMap[id][checkName]
+                checkedMap[id] = item
+            }
+        }
+    }
+
     //数据渲染
     Table.prototype.renderData = function(res, curr, count, sort) {
         let that = this,
@@ -788,6 +803,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
                                                 if (key && globalChecked.indexOf(item3) === -1) {
                                                     let k = tplData[key]
+                                                    tplData[checkName] = true
                                                     globalChecked.push(k)
                                                     globalCheckedMap[k] = tplData
                                                 }
@@ -795,6 +811,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                                             }
 
                                             if (key && globalChecked.indexOf(tplData[key]) !== -1) {
+                                                tplData[checkName] = true
                                                 return 'checked'
                                             }
 
@@ -873,6 +890,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             that.layFixRight.find('tbody').html(trs_fixed_r.join(''))
 
             that.renderForm()
+            syncGlobalCheckedData(data, that)
             that.syncCheckAll()
             if (that.haveInit) {
                 that.scrollPatch()
