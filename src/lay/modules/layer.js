@@ -385,7 +385,9 @@
                     (config.type === 0 && config.icon !== -1
                         ? '<i class="layui-layer-ico layui-layer-ico' + config.icon + '"></i>'
                         : '') +
-                    (config.type === 1 && conType ? '' : config.content || '') +
+                    (config.type === 1 && conType
+                        ? ''
+                        : typeof config.content === 'string' ? config.content : '') +
                     '</div>' +
                     '<span class="layui-layer-setwin">' +
                     (function() {
