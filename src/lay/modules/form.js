@@ -342,24 +342,16 @@ layui.define('layer', function(exports) {
                             })
 
                             //键盘事件
-                            input
-                                .on('keyup', function(e) {
-                                    let keyCode = e.keyCode
-                                    //Tab键
-                                    if (keyCode === 9) {
-                                        showDown()
-                                    }
-                                })
-                                .on('keydown', function(e) {
-                                    let keyCode = e.keyCode
-                                    //Tab键
-                                    if (keyCode === 9) {
-                                        hideDown()
-                                    } else if (keyCode === 13) {
-                                        //回车键
-                                        e.preventDefault()
-                                    }
-                                })
+                            input.on('keydown', function(e) {
+                                let keyCode = e.keyCode
+                                //Tab键
+                                if (keyCode === 9) {
+                                    hideDown()
+                                } else if (keyCode === 13) {
+                                    //回车键
+                                    e.preventDefault()
+                                }
+                            })
 
                             //检测值是否不属于select项
                             let notOption = function(value, callback, origin) {
