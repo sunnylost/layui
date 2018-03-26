@@ -630,22 +630,24 @@ layui.define('layer', function(exports) {
                                         layui.each(options, function(index, item) {
                                             if (index === 0 && !item.value) {
                                                 arr.push(
-                                                    '<dd lay-value="" class="layui-select-tips">' +
-                                                        (item.innerHTML || TIPS) +
-                                                        '</dd>'
+                                                    `<dd lay-value="" class="layui-select-tips" title="${item.innerHTML ||
+                                                        TIPS}">${item.innerHTML || TIPS}</dd>`
                                                 )
                                             } else if (item.tagName.toLowerCase() === 'optgroup') {
                                                 arr.push('<dt>' + item.label + '</dt>')
                                             } else {
                                                 arr.push(
-                                                    '<dd lay-value="' +
-                                                        item.value +
-                                                        '" class="' +
-                                                        (hasOwnProperty(valueMap, item.value)
-                                                            ? THIS
-                                                            : '') +
-                                                        (item.disabled ? ' ' + DISABLED : '') +
-                                                        '">' +
+                                                    `<dd lay-value="${
+                                                        item.value
+                                                    }" class="${(hasOwnProperty(
+                                                        valueMap,
+                                                        item.value
+                                                    )
+                                                        ? THIS
+                                                        : '') +
+                                                        (item.disabled
+                                                            ? ' ' + DISABLED
+                                                            : '')}" title="${item.innerHTML}">` +
                                                         (hasMulti
                                                             ? '<i class="layui-icon">&#xe605;</i>'
                                                             : '') +

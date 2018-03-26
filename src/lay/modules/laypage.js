@@ -254,10 +254,13 @@ layui.define(function(exports) {
             input = elem[tag]('input')[0],
             select = elem[tag]('select')[0],
             skip = function() {
-                let curr = input.value.replace(/\s|\D/g, '') | 0
-                if (curr) {
+                let curr = parseInt(input.value.replace(/\s|\D/g, '') | 0, 10)
+
+                if (curr > 0) {
                     config.curr = curr
                     that.render()
+                } else {
+                    input.value = ''
                 }
             }
 

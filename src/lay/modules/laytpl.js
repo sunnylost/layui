@@ -143,6 +143,8 @@ layui.define('jquery', function(exports) {
         }
     }
 
+    laytpl.defaultConfig = config
+
     laytpl.v = '1.2.0'
 
     exports('laytpl', laytpl)
