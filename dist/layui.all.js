@@ -514,7 +514,10 @@ layui.define('jquery', function (exports) {
                 str = str.replace(/^=/, '');
                 start = '"+_escape_(';
             }
-            return start + str.replace(/\\/g, '') + ')+"';
+            str = str.replace(/\\/g, '');
+
+            str = '(' + str + ') == null ? \'\' : ' + str;
+            return start + str + ')+"';
         });
         tpl = '"use strict";var view = "' + tpl + '";return view;';
 
@@ -538,9 +541,9 @@ layui.define('jquery', function (exports) {
         callback(result);
     };
 
-    var laytpl = function laytpl(tpl) {
+    var laytpl = function laytpl(tpl, opt) {
         if (typeof tpl !== 'string') return tool.error('Template not found');
-        return new Tpl(tpl);
+        return new Tpl(tpl, opt);
     };
 
     laytpl.config = function (options) {
@@ -1461,7 +1464,7 @@ layui.define(function (exports) {
     Class.prototype.remove = function (prev) {
         var elem = lay('#' + (prev || this.elemID));
 
-        if (!elem.hasClass(ELEM_STATIC)) {
+        if (!elem.hasClass(ELEM_STATIC) && elem.length) {
             this.checkDate(function () {
                 elem.remove();
             });
@@ -10916,7 +10919,7 @@ layui.define(function (exports) {
             config = this.config,
             times = this.index,
             content = config.content,
-            conType = (typeof content === 'undefined' ? 'undefined' : _typeof(content)) === 'object',
+            conType = content !== null && (typeof content === 'undefined' ? 'undefined' : _typeof(content)) === 'object',
             body = $('body');
 
         if (config.id && $('#' + config.id)[0]) return;
@@ -11634,7 +11637,7 @@ layui.define(function (exports) {
             content = void 0;
 
         if (options.formType === 2) {
-            content = '<textarea class="layui-layer-input"' + style + '>' + (options.value || '') + '</textarea>';
+            content = '<textarea class="layui-layer-input"' + style + '></textarea>';
         } else {
             content = '<input type="' + (options.formType === 1 ? 'password' : 'text') + '" class="layui-layer-input" value="' + (options.value || '') + '">';
         }
@@ -11650,7 +11653,7 @@ layui.define(function (exports) {
             maxWidth: $win.width(),
             success: function success(layero) {
                 prompt = layero.find('.layui-layer-input');
-                prompt.focus();
+                prompt.val(options.value || '').focus();
                 typeof _success === 'function' && _success(layero);
             },
             resize: false,
@@ -12891,7 +12894,7 @@ layui.define('layer', function (exports) {
                 },
                     events = function events(reElem, disabled, isSearch) {
                     var select = $(this);
-                    var fieldName = select.attr('name');
+                    var fieldName = select.attr('name') || select.attr('_name');
                     var title = reElem.find('.' + TITLE);
                     var input = title.find('input');
                     var dl = void 0;
@@ -12932,6 +12935,8 @@ layui.define('layer', function (exports) {
                             delete cacheObj.val[value];
                             cacheObj.inputsLength--;
                         }
+
+                        select.attr('_name', fieldName);
 
                         if (cacheObj.inputsLength) {
                             $div.removeClass(HIDE);
@@ -13159,14 +13164,31 @@ layui.define('layer', function (exports) {
                     selects = selects.filter('[lay-filter="' + elFilter + '"]');
                 }
 
+                function isUndefined(v) {
+                    return typeof v === 'undefined';
+                }
+
+                function hasValue(v) {
+                    return !isUndefined(v) && v !== '';
+                }
+
                 selects.each(function (index, select) {
                     var othis = $(this),
                         hasRender = othis.next('.' + CLASS),
                         disabled = this.disabled,
-                        value = othis.data('value') || select.value,
-                        hasDefaultVal = typeof value !== 'undefined',
-                        selected = $(select.options[select.selectedIndex]),
+                        dataValue = othis.data('value'),
+                        value = isUndefined(dataValue) ? select.value : dataValue,
+                        hasDefaultVal = hasValue(value),
+                        selected = void 0,
                         optionsFirst = select.options[0];
+
+                    othis.attr('_name', othis.attr('name') || othis.attr('_name'));
+
+                    if (select.selectedIndex === -1) {
+                        selected = $({});
+                    } else {
+                        selected = $(select.options[select.selectedIndex]);
+                    }
 
                     var id = uuid++;
                     othis.data('uuid', id);
@@ -13211,9 +13233,9 @@ layui.define('layer', function (exports) {
                     var reElem = void 0;
 
                     if (hasMulti) {
-                        reElem = $(['<div class="' + (isSearch ? '' : 'layui-unselect ') + CLASS + (hasMulti ? ' ' + CLASS_MULTI : '') + (disabled ? ' layui-select-disabled' : '') + '">', '<div class="' + TITLE + '"><div class="layui-hide layui-input"></div>' + '<input type="text" placeholder="' + placeholder + '" value="' + (value ? selected.html() : '') + '" readonly' + ' class="layui-input layui-unselect' + (disabled ? ' ' + DISABLED : '') + '">', '<i class="layui-edge"></i></div>', '</div>'].join(''));
+                        reElem = $(['<div class="' + (isSearch ? '' : 'layui-unselect ') + CLASS + (hasMulti ? ' ' + CLASS_MULTI : '') + (disabled ? ' layui-select-disabled' : '') + '">', '<div class="' + TITLE + '"><div class="layui-hide layui-input"></div>' + '<input type="text" placeholder="' + placeholder + '" value="' + (hasValue(value) ? selected.html() || '' : '') + '" readonly' + ' class="layui-input layui-unselect' + (disabled ? ' ' + DISABLED : '') + '">', '<i class="layui-edge"></i></div>', '</div>'].join(''));
                     } else {
-                        reElem = $(['<div class="' + (isSearch ? '' : 'layui-unselect ') + CLASS + (hasMulti ? ' ' + CLASS_MULTI : '') + (disabled ? ' layui-select-disabled' : '') + '">', '<div class="' + TITLE + '"><input type="text" placeholder="' + placeholder + '" value="' + (value ? selected.html() : '') + '" ' + (isSearch ? '' : 'readonly') + ' class="layui-input' + (isSearch ? '' : ' layui-unselect') + (disabled ? ' ' + DISABLED : '') + '">', '<i class="layui-edge"></i></div>', '</div>'].join(''));
+                        reElem = $(['<div class="' + (isSearch ? '' : 'layui-unselect ') + CLASS + (hasMulti ? ' ' + CLASS_MULTI : '') + (disabled ? ' layui-select-disabled' : '') + '">', '<div class="' + TITLE + '"><input type="text" placeholder="' + placeholder + '" value="' + (hasValue(value) ? selected.html() || '' : '') + '" ' + (isSearch ? '' : 'readonly') + ' class="layui-input' + (isSearch ? '' : ' layui-unselect') + (disabled ? ' ' + DISABLED : '') + '">', '<i class="layui-edge"></i></div>', '</div>'].join(''));
                     }
 
                     hasRender[0] && hasRender.remove();
@@ -13234,7 +13256,7 @@ layui.define('layer', function (exports) {
                         } else {
                             var addedNum = 0;
                             var valArr = value.split(',');
-                            var fieldName = othis.attr('name');
+                            var fieldName = othis.attr('name') || othis.attr('_name');
 
                             for (var _i = 0; _i < valArr.length; _i++) {
                                 var item = valArr[_i];
@@ -13363,7 +13385,7 @@ layui.define('layer', function (exports) {
                         var name = radio[0].name,
                             forms = radio.parents(ELEM);
                         var filter = radio.attr('lay-filter');
-                        var sameRadio = forms.find('input[name=' + name.replace(/[.#[\]]/g, '\\$1') + ']');
+                        var sameRadio = forms.find('input[name=' + name.replace(/([.#[\]])/g, '\\$1') + ']');
 
                         if (radio[0].disabled) return;
 
@@ -13397,8 +13419,14 @@ layui.define('layer', function (exports) {
 
                     if (typeof othis.attr('lay-ignore') === 'string') return othis.show();
 
-                    var reElem = $(['<div class="layui-unselect ' + CLASS + (radio.checked ? ' ' + CLASS + 'ed' : '') + (disabled ? ' layui-radio-disbaled ' + DISABLED : '') + '">', '<i class="layui-anim layui-icon">' + ICON[radio.checked ? 0 : 1] + '</i>', '<span>' + (radio.title || '') + '</span>', '</div>'].join(''));
-
+                    var reElem = $(['<div class="layui-unselect ' + CLASS + (radio.checked ? ' ' + CLASS + 'ed' : '') + (disabled ? ' layui-radio-disbaled ' + DISABLED : '') + '">', '<i class="layui-anim layui-icon">' + ICON[radio.checked ? 0 : 1] + '</i>', '<span>' + function () {
+                        var title = radio.title || '';
+                        if (typeof othis.next().attr('lay-radio') === 'string') {
+                            title = othis.next().html();
+                            othis.next().remove();
+                        }
+                        return title;
+                    }() + '</span>', '</div>'].join(''));
                     hasRender[0] && hasRender.remove();
                     othis.after(reElem);
                     events.call(this, reElem);
@@ -13527,6 +13555,7 @@ layui.define('layer', function (exports) {
 
     var toString = Object.prototype.toString;
     var hasOwn = Object.prototype.hasOwnProperty;
+
     function isArray(arr) {
         return toString.call(arr) === '[object Array]';
     }
@@ -13812,7 +13841,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
         layer = layui.layer,
         form = layui.form,
         hint = layui.hint(),
-        device = layui.device(),
         table = {
         config: {
             checkName: 'LAY_CHECKED',
@@ -13830,7 +13858,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
             return layui.onevent.call(this, MOD_NAME, events, callback);
         }
     },
-        TPL_HEADER = function TPL_HEADER(options) {
+        tplHeader = function tplHeader(options) {
         options = options || {};
 
         var rowCols = '{{#if(item2.colspan){}} colspan="{{item2.colspan}}"{{#} if(item2.rowspan){}} rowspan="{{item2.rowspan}}"{{#}}}';
@@ -13854,8 +13882,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
 
         return ['<table cellspacing="0" cellpadding="0" border="0" class="layui-table" ' + setSkin + ' ' + setSize + ' ' + setEven + '><thead>', '{{# layui.each(d.data.cols, function(i1, item1){ }}', '<tr>', generateFixed, '<th data-field="{{ item2.field||i2 }}" {{# if(item2.minWidth){ }}data-minwidth="{{item2.minWidth}}"{{# } }} ' + rowCols + ' {{# if(item2.unresize){ }}data-unresize="true"{{# } }}', ' {{# if(item2.hide){ }}class="layui-hide"{{# } }}>', generateCell, '</th>', options.fixed ? '{{# }; }}' : '', '{{# }); }}', '</tr>', '{{# }); }}', '</thead>', '</table>'].join('');
     },
-        TPL_BODY = ['<table cellspacing="0" cellpadding="0" border="0" class="layui-table" ', '{{# if(d.data.skin){ }}lay-skin="{{d.data.skin}}"{{# } }} {{# if(d.data.size){ }}lay-size="{{d.data.size}}"{{# } }} {{# if(d.data.even){ }}lay-even{{# } }}>', '<tbody></tbody>', '</table>'].join(''),
-        TPL_MAIN = ['<div class="layui-form layui-border-box {{d.VIEW_CLASS}}" lay-filter="LAY-table-{{d.index}}" style="{{# if(d.data.width){ }}width:{{d.data.width}}px;{{# } }} {{# if(d.data.height){ }}height:{{d.data.height}}px;{{# } }}">', '{{# if(d.data.toolbar){ }}', '<div class="layui-table-tool"></div>', '{{# } }}', '<div class="layui-table-box">', '{{# var left, right; }}', '<div class="layui-table-header">', TPL_HEADER(), '</div>', '<div class="layui-table-body layui-table-main">', TPL_BODY, '</div>', '{{# if(left){ }}', '<div class="layui-table-fixed layui-table-fixed-l">', '<div class="layui-table-header">', TPL_HEADER({ fixed: true }), '</div>', '<div class="layui-table-body">', TPL_BODY, '</div>', '</div>', '{{# }; }}', '{{# if(right){ }}', '<div class="layui-table-fixed layui-table-fixed-r">', '<div class="layui-table-header">', TPL_HEADER({ fixed: 'right' }), '<div class="layui-table-mend"></div>', '</div>', '<div class="layui-table-body">', TPL_BODY, '</div>', '</div>', '{{# }; }}', '</div>', '{{# if(d.data.page){ }}', '<div class="layui-table-page">', '<div id="layui-table-page{{d.index}}"></div>', '</div>', '{{# } }}', '<style>', '{{# layui.each(d.data.cols, function(i1, item1){', 'layui.each(item1, function(i2, item2){ }}', '.laytable-cell-{{d.index}}-{{item2.field||i2}}{ ', '{{# if(item2.width){ }}', 'width: {{item2.width}}px;', '{{# } }}', ' }', '{{# });', '}); }}', '</style>', '</div>'].join(''),
+        tplBody = ['<table cellspacing="0" cellpadding="0" border="0" class="layui-table" ', '{{# if(d.data.skin){ }}lay-skin="{{d.data.skin}}"{{# } }} {{# if(d.data.size){ }}lay-size="{{d.data.size}}"{{# } }} {{# if(d.data.even){ }}lay-even{{# } }}>', '<tbody></tbody>', '</table>'].join(''),
+        tplMain = ['<div class="layui-form layui-border-box {{d.VIEW_CLASS}}" lay-filter="LAY-table-{{d.index}}" style="{{# if(d.data.width){ }}width:{{d.data.width}}px;{{# } }} {{# if(d.data.height){ }}height:{{d.data.height}}px;{{# } }}">', '{{# if(d.data.toolbar){ }}', '<div class="layui-table-tool"></div>', '{{# } }}', '<div class="layui-table-box">', '{{# var left, right; }}', '<div class="layui-table-header">', tplHeader(), '</div>', '<div class="layui-table-body layui-table-main">', tplBody, '</div>', '{{# if(left){ }}', '<div class="layui-table-fixed layui-table-fixed-l">', '<div class="layui-table-header">', tplHeader({ fixed: true }), '</div>', '<div class="layui-table-body">', tplBody, '</div>', '</div>', '{{# }; }}', '{{# if(right){ }}', '<div class="layui-table-fixed layui-table-fixed-r">', '<div class="layui-table-header">', tplHeader({ fixed: 'right' }), '<div class="layui-table-mend"></div>', '</div>', '<div class="layui-table-body">', tplBody, '</div>', '</div>', '{{# }; }}', '</div>', '{{# if(d.data.page){ }}', '<div class="layui-table-page">', '<div id="layui-table-page{{d.index}}"></div>', '</div>', '{{# } }}', '<style>', '{{# layui.each(d.data.cols, function(i1, item1){', 'layui.each(item1, function(i2, item2){ }}', '.laytable-cell-{{d.index}}-{{item2.field||i2}}{ ', '{{# if(typeof item2.width === "number"){ }}', 'width: {{item2.width}}px;', '{{# } }}', ' }', '{{# });', '}); }}', '</style>', '</div>'].join(''),
         _WIN = $(window),
         _DOC = $(document);
 
@@ -13968,7 +13996,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
         that.setArea();
         var othis = options.elem,
             hasRender = othis.next('.' + ELEM_VIEW),
-            reElem = that.elem = $(laytpl(TPL_MAIN).render({
+            reElem = that.elem = $(laytpl(tplMain).render({
             VIEW_CLASS: ELEM_VIEW,
             data: options,
             index: that.index }));
@@ -14022,6 +14050,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
             item.unresize = true;
             item.width = item.width || initWidth[item.type];
         }
+
+        if (item.hide) {
+            item.width = 0;
+        }
     };
 
     Table.prototype.setArea = function () {
@@ -14071,7 +14103,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
 
                 if (/\d+%$/.test(width)) {
                     item2.width = width = Math.floor(parseFloat(width) / 100 * cntrWidth);
-                } else if (!width) {
+                } else if (!width && !item2.hide) {
                     item2.width = width = 0;
                     autoColNums++;
                 }
@@ -14087,7 +14119,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
             layui.each(item1, function (i2, item2) {
                 var minWidth = item2.minWidth || options.cellMinWidth;
                 if (item2.colspan > 1) return;
-                if (item2.width === 0) {
+                if (item2.width === 0 && !item2.hide) {
                     item2.width = Math.floor(autoWidth >= minWidth ? autoWidth : minWidth);
                 }
             });
@@ -14149,9 +14181,12 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
                 data: $.extend(params, options.where),
                 dataType: 'json',
                 success: function success(res) {
-                    if (getProp(res, response.statusName) != response.statusCode) {
+                    if (getProp(res, response.statusName) !== response.statusCode) {
                         that.renderForm();
                         that.layPage.hide();
+                        if (typeof options.error === 'function') {
+                            options.error(res);
+                        }
                         return that.layMain.html('<div class="' + NONE + '">' + (getProp(res, response.msgName) || '返回的数据状态异常') + '</div>');
                     }
                     that.layPage.show();
@@ -14161,10 +14196,13 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
                     loadIndex && layer.close(loadIndex);
                     typeof options.done === 'function' && options.done(res, curr, getProp(res, response.countName));
                 },
-                error: function error() {
+                error: function error(res) {
                     that.layMain.html('<div class="' + NONE + '">数据接口请求异常</div>');
                     that.renderForm();
                     loadIndex && layer.close(loadIndex);
+                    if (typeof options.error === 'function') {
+                        options.error(res);
+                    }
                 }
             };
 
@@ -14240,13 +14278,16 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
             data = getProp(res, options.response.dataName) || [],
             trs = [],
             trs_fixed = [],
-            trs_fixed_r = [],
-            render = function render() {
+            trs_fixed_r = [];
+
+        function render() {
             if (!sort && that.sortKey) {
                 return that.sort(that.sortKey.field, that.sortKey.sort, true);
             }
 
             var cellSpan = options.cellSpan || BLANK_FN;
+
+            var stripe = typeof options.stripe === 'undefined' ? true : options.stripe;
 
             layui.each(data, function (i1, item1) {
                 var tds = [],
@@ -14326,10 +14367,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
                         attr.push('class="' + classes.join(' ') + '"');
                     }
 
-                    var td = ['<td data-field="' + field + '" ' + attr.join(' '), colspan, rowspan, '>', '<div class="layui-table-cell laytable-cell-' + function () {
-                        var str = options.index + '-' + field;
-                        return item3.type === 'normal' ? str : str + ' laytable-cell-' + item3.type;
-                    }() + '">' + function () {
+                    var str = 'layui-table-cell laytable-cell-' + options.index + '-' + field;
+                    var tdClasses = item3.type === 'normal' ? str : str + ' laytable-cell-' + item3.type;
+
+                    var td = ['<td data-field="' + field + '" ' + attr.join(' '), colspan, rowspan, '>', '<div class="' + tdClasses + '" title="' + content + '">' + function () {
                         var tplData = $.extend(true, {
                             LAY_INDEX: numbers
                         }, item1);
@@ -14373,7 +14414,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
                         }
 
                         if (item3.templet) {
-                            return laytpl($(item3.templet).html() || String(content)).render(tplData);
+                            if (typeof item3.templet === 'function') {
+                                return item3.templet(tplData);
+                            } else {
+                                return laytpl($(item3.templet).html() || String(content)).render(tplData);
+                            }
                         } else {
                             return content;
                         }
@@ -14384,9 +14429,16 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
                     if (item3.fixed === 'right') tds_fixed_r.push(td);
                 });
 
-                var trClass = i1 % 2 ? 'layui-tr-odd' : 'layui-tr-even';
+                var trClass = void 0;
+
+                if (stripe) {
+                    trClass = i1 % 2 ? 'layui-tr-odd' : 'layui-tr-even';
+                } else {
+                    trClass = '';
+                }
+
                 trs.push('<tr data-index="' + i1 + '" class="' + trClass + '">' + tds.join('') + '</tr>');
-                trs_fixed.push('<tr data-index="' + i1 + '"class="' + trClass + '">' + tds_fixed.join('') + '</tr>');
+                trs_fixed.push('<tr data-index="' + i1 + '" class="' + trClass + '">' + tds_fixed.join('') + '</tr>');
                 trs_fixed_r.push('<tr data-index="' + i1 + '" class="' + trClass + '">' + tds_fixed_r.join('') + '</tr>');
             });
 
@@ -14407,7 +14459,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
             }
             that.haveInit = true;
             layer.close(that.tipsIndex);
-        };
+        }
 
         that.key = options.id || options.index;
         table.cache[that.key] = data;
@@ -14420,6 +14472,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
             that.layFixed.remove();
             that.layMain.find('tbody').html('');
             that.layMain.find('.' + NONE).remove();
+            that.layPage.hide();
             return that.layMain.append('<div class="' + NONE + '">无数据</div>');
         }
 
@@ -14975,33 +15028,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
                     othis.find('.' + ELEM_EDIT)[0] || othis.append(input);
                     input.focus();
                 }
-                return;
-            }
-
-            if (elemCell.find('.layui-form-switch,.layui-form-checkbox')[0]) return;
-
-            if (Math.round(elemCell.prop('scrollWidth')) > Math.round(elemCell.outerWidth())) {
-                that.tipsIndex = layer.tips(['<div class="layui-table-tips-main" style="margin-top: -' + (elemCell.height() + 16) + 'px;' + function () {
-                    if (options.size === 'sm') {
-                        return 'padding: 4px 15px; font-size: 12px;';
-                    }
-                    if (options.size === 'lg') {
-                        return 'padding: 14px 15px;';
-                    }
-                    return '';
-                }() + '">', elemCell.html(), '</div>', '<i class="layui-icon layui-table-tips-c">&#x1006;</i>'].join(''), elemCell[0], {
-                    tips: [3, ''],
-                    time: -1,
-                    anim: -1,
-                    maxWidth: device.ios || device.android ? 300 : 600,
-                    isOutAnim: false,
-                    skin: 'layui-table-tips',
-                    success: function success(layero, index) {
-                        layero.find('.layui-table-tips-c').on('click', function () {
-                            layer.close(index);
-                        });
-                    }
-                });
             }
         });
 
@@ -15080,13 +15106,14 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
     Table.prototype.resizeColumn = function () {
         var _this = this;
 
-        var cellMinWidth = this.config.cellMinWidth,
+        var data = table.cache[this.config.id],
+            cellMinWidth = this.config.cellMinWidth,
             cols = this.resizedColumn,
             colsNum = cols.length,
             layMainTable = this.layMain.children('table'),
             oldWidth = this.layMain.width(),
             offset = layMainTable.outerWidth() - oldWidth;
-        if (!layMainTable.length || !this.config.data || !this.config.data.length || offset === 0) {
+        if (!layMainTable.length || !data || !data.length || offset === 0) {
             return;
         }
 
@@ -15187,7 +15214,17 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
             }
         });
 
-        html = templet ? laytpl($(templet).html() || this.value).render(tableData[index]) : '';
+        var rowData = tableData[index];
+
+        if (templet) {
+            if (typeof templet === 'function') {
+                html = templet(rowData);
+            } else {
+                html = laytpl($(templet).html() || this.value).render(rowData);
+            }
+        } else {
+            html = '';
+        }
 
         if ($tr.hasClass(ROW_EXPANDED)) {
             $tr.removeClass(ROW_EXPANDED);
@@ -15197,7 +15234,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
         } else {
             $tr.addClass(ROW_EXPANDED);
             $el.html('&#xe61a');
-            $tr.after('<tr><td colspan="' + this.config.cols[0].length + '">' + html + '</td></tr>');
+            $tr.after('<tr class="layui-table-expand-tr"><td colspan="' + this.config.cols[0].length + '">' + html + '</td></tr>');
             isExpand = true;
         }
 
@@ -15286,7 +15323,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function (exports) {
             invalidNum = 0,
             arr = [],
             data = table.cache[id];
-        if (!data) return {};
+        if (!data || !data.length) return {};
 
         layui.each(data, function (i, item) {
             if (item.constructor === Array) {
@@ -15747,7 +15784,7 @@ layui.define('jquery', function (exports) {
 
         toDateString: function toDateString(time, format) {
             var that = this,
-                date = new Date(parseInt(time) || new Date()),
+                date = new Date(time || new Date()),
                 ymd = [that.digit(date.getFullYear(), 4), that.digit(date.getMonth() + 1), that.digit(date.getDate())],
                 hms = [that.digit(date.getHours()), that.digit(date.getMinutes()), that.digit(date.getSeconds())];
 
