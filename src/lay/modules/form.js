@@ -338,7 +338,11 @@ layui.define('layer', function(exports) {
 
                             //点击箭头获取焦点
                             title.find('.layui-edge').on('click', function() {
-                                input.focus()
+                                try {
+                                    input.focus()
+                                } catch (e) {
+                                    //do nothing
+                                }
                             })
 
                             //键盘事件
@@ -927,7 +931,13 @@ layui.define('layer', function(exports) {
                         } else {
                             layer.msg(errorText, { icon: 5, shift: 6 })
                         }
-                        if (!device.android && !device.ios) item.focus() //非移动设备自动定位焦点
+                        if (!device.android && !device.ios) {
+                            try {
+                                item.focus()
+                            } catch (e) {
+                                //do nothing
+                            }
+                        } //非移动设备自动定位焦点
                         othis.addClass(DANGER)
                         return (stop = true)
                     }
