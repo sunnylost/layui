@@ -39,17 +39,13 @@ let argv = require('minimist')(process.argv.slice(2), {
             ver = ver === 'open'
 
             //可指定模块压缩，eg：gulp minjs --mod layer,laytpl
-            let mod = argv.mod
-                    ? (function() {
-                          return '(' + argv.mod.replace(/,/g, '|') + ')'
-                      })()
-                    : '',
+            let mod = argv.mod ? '(' + argv.mod.replace(/,/g, '|') + ')' : '',
                 src = [
-                    './src/**/*' + mod + '.js',
-                    '!./src/**/mobile/*.js',
-                    '!./src/lay/**/mobile.js',
-                    '!./src/lay/all.js',
-                    '!./src/lay/all-mobile.js'
+                    './src/**/*' + mod + '.js' //,
+                    // '!./src/**/mobile/*.js',
+                    // '!./src/lay/**/mobile.js',
+                    // '!./src/lay/all.js',
+                    // '!./src/lay/all-mobile.js'
                 ],
                 dir = ver ? release : 'dist'
 

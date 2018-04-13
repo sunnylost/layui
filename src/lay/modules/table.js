@@ -276,7 +276,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             {
                 statusName: 'code',
                 statusCode: 0,
-                msgName: 'msg',
+                msgName: 'message',
                 dataName: 'data',
                 countName: 'count'
             },

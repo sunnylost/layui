@@ -868,12 +868,16 @@ layui.define('layer', function(exports) {
 
     //表单提交校验
     let submit = function() {
+        /**
+         * upload 中，this 就是触发 submit 事件的 form
+         * @type {*|HTMLElement}
+         */
         let button = $(this),
             verify = form.config.verify,
             stop = null,
             DANGER = 'layui-form-danger',
             field = {},
-            elem = button.parents(ELEM).eq(0),
+            elem = button.hasClass(ELEM) ? button : button.parents(ELEM).eq(0),
             verifyElem = elem.find('*[lay-verify]'), //获取需要校验的元素
             formElem = button.parents('.layui-form')[0], //获取当前所在的form元素，如果存在的话
             fieldElem = elem.find('input,select,textarea'), //获取所有表单域
