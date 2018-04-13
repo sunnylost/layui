@@ -131,7 +131,7 @@ layui.define('layer', function(exports) {
                 [
                     '<form target="' +
                         ELEM_IFRAME +
-                        '" class="' +
+                        '" class="layui-form ' +
                         ELEM_FORM +
                         '" method="' +
                         options.method,
@@ -346,45 +346,45 @@ layui.define('layer', function(exports) {
         }
 
         switch (options.accept) {
-        case 'file': //一般文件
-            if (exts && !RegExp('\\w\\.(' + exts + ')$', 'i').test(escape(value))) {
-                that.msg('选择的文件中包含不支持的格式')
-                return (elemFile.value = '')
-            }
-            break
-        case 'video': //视频文件
-            if (
-                !RegExp(
-                    '\\w\\.(' + (exts || 'avi|mp4|wma|rmvb|rm|flash|3gp|flv') + ')$',
-                    'i'
-                ).test(escape(value))
-            ) {
-                that.msg('选择的视频中包含不支持的格式')
-                return (elemFile.value = '')
-            }
-            break
-        case 'audio': //音频文件
-            if (!RegExp('\\w\\.(' + (exts || 'mp3|wav|mid') + ')$', 'i').test(escape(value))) {
-                that.msg('选择的音频中包含不支持的格式')
-                return (elemFile.value = '')
-            }
-            break
-        default:
-            //图片文件
-            layui.each(value, function(i, item) {
-                if (
-                    !RegExp('\\w\\.(' + (exts || 'jpg|png|gif|bmp|jpeg$') + ')', 'i').test(
-                        escape(item)
-                    )
-                ) {
-                    check = true
+            case 'file': //一般文件
+                if (exts && !RegExp('\\w\\.(' + exts + ')$', 'i').test(escape(value))) {
+                    that.msg('选择的文件中包含不支持的格式')
+                    return (elemFile.value = '')
                 }
-            })
-            if (check) {
-                that.msg('选择的图片中包含不支持的格式')
-                return (elemFile.value = '')
-            }
-            break
+                break
+            case 'video': //视频文件
+                if (
+                    !RegExp(
+                        '\\w\\.(' + (exts || 'avi|mp4|wma|rmvb|rm|flash|3gp|flv') + ')$',
+                        'i'
+                    ).test(escape(value))
+                ) {
+                    that.msg('选择的视频中包含不支持的格式')
+                    return (elemFile.value = '')
+                }
+                break
+            case 'audio': //音频文件
+                if (!RegExp('\\w\\.(' + (exts || 'mp3|wav|mid') + ')$', 'i').test(escape(value))) {
+                    that.msg('选择的音频中包含不支持的格式')
+                    return (elemFile.value = '')
+                }
+                break
+            default:
+                //图片文件
+                layui.each(value, function(i, item) {
+                    if (
+                        !RegExp('\\w\\.(' + (exts || 'jpg|png|gif|bmp|jpeg$') + ')', 'i').test(
+                            escape(item)
+                        )
+                    ) {
+                        check = true
+                    }
+                })
+                if (check) {
+                    that.msg('选择的图片中包含不支持的格式')
+                    return (elemFile.value = '')
+                }
+                break
         }
 
         //检验文件数量
