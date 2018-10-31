@@ -1,5 +1,4 @@
 ﻿/**
-
  @Name : layui.laytpl 模板引擎
  @Author：贤心
  @License：MIT
@@ -50,8 +49,6 @@ layui.define('jquery', function(exports) {
     }
 
     Tpl.pt = Tpl.prototype
-
-    window.errors = 0
 
     //编译模版
     Tpl.pt.parse = function(tpl) {

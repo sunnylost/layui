@@ -68,6 +68,39 @@ layui.define('layer', function(exports) {
         return layui.onevent.call(this, MOD_NAME, events, callback)
     }
 
+    //初始赋值
+    Form.prototype.val = function(filter, object) {
+        let formElem = $(ELEM + '[lay-filter="' + filter + '"]')
+
+        formElem.each(function(index, item) {
+            let itemFrom = $(item)
+            layui.each(object, function(key, value) {
+                let itemElem = itemFrom.find('[name="' + key + '"]')
+                let type
+
+                //如果对应的表单不存在，则不执行
+                if (!itemElem[0]) return
+                type = itemElem[0].type
+
+                //如果为复选框
+                if (type === 'checkbox') {
+                    itemElem[0].checked = value
+                } else if (type === 'radio') {
+                    //如果为单选框
+                    itemElem.each(function() {
+                        if (this.value === value) {
+                            this.checked = true
+                        }
+                    })
+                } else {
+                    //其它类型的表单
+                    itemElem.val(value)
+                }
+            })
+        })
+        form.render(null, filter)
+    }
+
     //表单控件渲染
     Form.prototype.render = function(type, filter, elFilter) {
         let that = this,
