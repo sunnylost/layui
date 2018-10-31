@@ -688,10 +688,19 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                 }
 
                 that.eachCols(function(i3, item3) {
-                    let field = item3.field || i3,
-                        content = item1[field]
+                    let field = item3.field || i3
+                    let content = item1[field]
+                    let cellTitle = content
 
-                    if (content === undefined || content === null) content = ''
+                    if (content === undefined || content === null) {
+                        cellTitle = content = ''
+                    }
+
+                    if (typeof content === 'object') {
+                        content = content.value || ''
+                        cellTitle = content.title || ''
+                    }
+
                     if (item3.colspan > 1) return
 
                     let span = getSpan(cellSpan, item1, item3, i1, i3)
@@ -773,7 +782,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                         colspan,
                         rowspan,
                         '>',
-                        `<div class="${tdClasses}" title="${content}">` +
+                        `<div class="${tdClasses}" title="${cellTitle}">` +
                             (function() {
                                 let tplData = $.extend(
                                     true,
