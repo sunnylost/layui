@@ -2,7 +2,6 @@
  @Name : layui.laytpl 模板引擎
  @Author：贤心
  @License：MIT
-
  */
 layui.define('jquery', function(exports) {
     'use strict'

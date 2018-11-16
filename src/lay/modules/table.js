@@ -237,9 +237,13 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
 
     //默认配置
     Table.prototype.config = {
+        autoSort: true,
         limit: 10, //每页显示的数量
         loading: true, //请求数据时，是否显示loading
-        cellMinWidth: 60 //所有单元格默认最小宽度
+        cellMinWidth: 60, //所有单元格默认最小宽度
+        text: {
+            none: '无数据'
+        }
     }
 
     //表格渲染
@@ -254,8 +258,11 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         let checked = options.checked
 
         if (!checked) {
-            options.checkedMap = {}
             options.checked = [] //选中
+        }
+
+        if (!options.checkedMap) {
+            options.checkedMap = {}
         }
 
         if (!options.expanded) {
@@ -357,7 +364,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         })
 
         //请求数据
-        that.pullData(that.page)
+        that.pullData(that.page, that.loading())
         that.events()
     }
 
@@ -519,6 +526,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             if (typeof options.done === 'function') {
                 options.done(res, curr, getProp(res, response.countName))
             }
+
+            loadIndex && layer.close(loadIndex)
         } else if (options.url) {
             //Ajax请求
             let params = {}
@@ -549,17 +558,19 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     that.renderData(res, curr, getProp(res, response.countName))
                     sort()
                     options.time = new Date().getTime() - that.startTime + ' ms' //耗时（接口请求+视图渲染）
-                    loadIndex && layer.close(loadIndex)
                     typeof options.done === 'function' &&
                         options.done(res, curr, getProp(res, response.countName))
                 },
                 error: function(res) {
                     that.layMain.html('<div class="' + NONE + '">数据接口请求异常</div>')
                     that.renderForm()
-                    loadIndex && layer.close(loadIndex)
                     if (typeof options.error === 'function') {
                         options.error(res)
                     }
+                },
+
+                complete() {
+                    loadIndex && layer.close(loadIndex)
                 }
             }
 
@@ -696,11 +707,6 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                         cellTitle = content = ''
                     }
 
-                    if (typeof content === 'object') {
-                        content = content.value || ''
-                        cellTitle = content.title || ''
-                    }
-
                     if (item3.colspan > 1) return
 
                     let span = getSpan(cellSpan, item1, item3, i1, i3)
@@ -776,83 +782,91 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
                     let tdClasses =
                         item3.type === 'normal' ? str : str + ' laytable-cell-' + item3.type
 
+                    content = (function() {
+                        let tplData = $.extend(
+                            true,
+                            {
+                                LAY_INDEX: numbers
+                            },
+                            item1
+                        )
+
+                        //渲染复选框列视图
+                        if (item3.type === 'checkbox') {
+                            return (
+                                '<input type="checkbox" name="layTableCheckbox" lay-skin="primary" ' +
+                                (function() {
+                                    let globalChecked = that.config.checked || []
+                                    let globalCheckedMap = that.config.checkedMap
+                                    let checkName = table.config.checkName
+                                    let key = that.config.globalCheck
+
+                                    //TODO: 如果是全选; 这里应该有错误
+                                    if (item3[checkName]) {
+                                        item1[checkName] = item3[checkName]
+
+                                        if (!item3[checkName]) {
+                                            return ''
+                                        }
+
+                                        if (key && globalChecked.indexOf(item3) === -1) {
+                                            let k = tplData[key]
+                                            tplData[checkName] = true
+                                            globalChecked.push(k)
+                                            globalCheckedMap[k] = tplData
+                                        }
+                                        return 'checked'
+                                    }
+
+                                    if (key && globalChecked.indexOf(tplData[key]) !== -1) {
+                                        tplData[checkName] = true
+                                        return 'checked'
+                                    }
+
+                                    return tplData[checkName] ? 'checked' : ''
+                                })() +
+                                '>'
+                            )
+                        } else if (item3.type === 'numbers') {
+                            //渲染序号
+                            return numbers
+                        } else if (item3.type === 'expand') {
+                            //渲染展开按钮
+                            return '<i class="layui-icon layui-table-expand" name="layTableExpand" lay-filter="layTableExpandCurrentRow">&#xe602;</i>'
+                        }
+
+                        //解析工具列模板
+                        if (item3.toolbar) {
+                            return laytpl($(item3.toolbar).html() || '').render(tplData)
+                        }
+
+                        if (item3.templet) {
+                            if (typeof item3.templet === 'function') {
+                                return item3.templet(tplData)
+                            } else {
+                                return laytpl($(item3.templet).html() || String(content)).render(
+                                    tplData
+                                )
+                            }
+                        } else {
+                            return content
+                        }
+                    })()
+
+                    //不需要再次设置 title，因为结果可能包含 html
+                    if (typeof content === 'object' && content !== null) {
+                        cellTitle = content.title || ''
+                        content = content.value || ''
+                    }
+
                     //td内容
                     let td = [
                         `<td data-field="${field}" ${attr.join(' ')}`,
                         colspan,
                         rowspan,
                         '>',
-                        `<div class="${tdClasses}" title="${cellTitle}">` +
-                            (function() {
-                                let tplData = $.extend(
-                                    true,
-                                    {
-                                        LAY_INDEX: numbers
-                                    },
-                                    item1
-                                )
-
-                                //渲染复选框列视图
-                                if (item3.type === 'checkbox') {
-                                    return (
-                                        '<input type="checkbox" name="layTableCheckbox" lay-skin="primary" ' +
-                                        (function() {
-                                            let globalChecked = that.config.checked || []
-                                            let globalCheckedMap = that.config.checkedMap
-                                            let checkName = table.config.checkName
-                                            let key = that.config.globalCheck
-
-                                            //如果是全选
-                                            if (item3[checkName]) {
-                                                item1[checkName] = item3[checkName]
-
-                                                if (!item3[checkName]) {
-                                                    return ''
-                                                }
-
-                                                if (key && globalChecked.indexOf(item3) === -1) {
-                                                    let k = tplData[key]
-                                                    tplData[checkName] = true
-                                                    globalChecked.push(k)
-                                                    globalCheckedMap[k] = tplData
-                                                }
-                                                return 'checked'
-                                            }
-
-                                            if (key && globalChecked.indexOf(tplData[key]) !== -1) {
-                                                tplData[checkName] = true
-                                                return 'checked'
-                                            }
-
-                                            return tplData[checkName] ? 'checked' : ''
-                                        })() +
-                                        '>'
-                                    )
-                                } else if (item3.type === 'numbers') {
-                                    //渲染序号
-                                    return numbers
-                                } else if (item3.type === 'expand') {
-                                    //渲染展开按钮
-                                    return '<i class="layui-icon layui-table-expand" name="layTableExpand" lay-filter="layTableExpandCurrentRow">&#xe602;</i>'
-                                }
-
-                                //解析工具列模板
-                                if (item3.toolbar) {
-                                    return laytpl($(item3.toolbar).html() || '').render(tplData)
-                                }
-
-                                if (item3.templet) {
-                                    if (typeof item3.templet === 'function') {
-                                        return item3.templet(tplData)
-                                    } else {
-                                        return laytpl(
-                                            $(item3.templet).html() || String(content)
-                                        ).render(tplData)
-                                    }
-                                } else {
-                                    return content
-                                }
-                            })(),
+                        `<div class="${tdClasses}" title="${cellTitle}">`,
+                        content,
                         '</div></td>'
                     ].join('')
 
@@ -926,7 +940,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             that.layMain.find('tbody').html('')
             that.layMain.find('.' + NONE).remove()
             that.layPage.hide()
-            return that.layMain.append('<div class="' + NONE + '">无数据</div>')
+            return that.layMain.append(`<div class="${NONE}">${options.text.none}</div>`)
         }
 
         render()
@@ -1028,20 +1042,23 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             sort: type
         }
 
-        if (type === 'asc') {
-            //升序
-            thisData = layui.sort(data, field)
-        } else if (type === 'desc') {
-            //降序
-            thisData = layui.sort(data, field, true)
-        } else {
-            //清除排序
-            thisData = layui.sort(data, table.config.indexName)
-            delete that.sortKey
-        }
+        //默认为前端自动排序。如果否，则需自主排序（通常为服务端处理好排序）
+        if (options.autoSort) {
+            if (type === 'asc') {
+                //升序
+                thisData = layui.sort(data, field)
+            } else if (type === 'desc') {
+                //降序
+                thisData = layui.sort(data, field, true)
+            } else {
+                //清除排序
+                thisData = layui.sort(data, table.config.indexName)
+                delete that.sortKey
+            }
 
-        setProp(res, options.response.dataName, thisData)
-        that.renderData(res, that.page, that.count, true)
+            setProp(res, options.response.dataName, thisData)
+            that.renderData(res, that.page, that.count, true)
+        }
         layer.close(that.tipsIndex)
 
         if (formEvent) {

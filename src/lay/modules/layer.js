@@ -154,7 +154,10 @@
                     {
                         content: content,
                         btn: ready.btn,
-                        yes: yes,
+                        yes(index) {
+                            yes.apply(this, arguments)
+                            layer.close(index)
+                        },
                         btn2: cancel
                     },
                     type ? {} : options
@@ -445,7 +448,6 @@
         switch (config.type) {
             case 0:
                 config.btn = 'btn' in config ? config.btn : ready.btn[0]
-                layer.closeAll('dialog')
                 break
             case 2:
                 config.content = conType
