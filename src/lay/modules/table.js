@@ -674,6 +674,10 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             trs = [],
             trs_fixed = [],
             trs_fixed_r = []
+
+        if (that.isDestroyed) {
+            return
+        }
         //渲染视图
         function render() {
             //后续性能提升的重点
@@ -1987,7 +1991,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
         }
 
         clearEventsHandler(config.table)
-
+        config.isDestroyed = true
         return table.render($.extend(true, {}, config, options))
     }
 
