@@ -675,7 +675,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports) {
             trs_fixed = [],
             trs_fixed_r = []
 
-        if (that.isDestroyed) {
+        if (options.isDestroyed) {
             return
         }
         //渲染视图
